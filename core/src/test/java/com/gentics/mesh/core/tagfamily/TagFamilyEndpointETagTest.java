@@ -51,13 +51,8 @@ public class TagFamilyEndpointETagTest extends AbstractETagTest {
 			MeshRequest<TagFamilyResponse> request = client().findTagFamilyByUuid(PROJECT_NAME, tagfamily.getUuid());
 			assertEquals(etag, expect304(request, etag, true));
 
-			// The node has no node reference and thus expanding will not affect the etag
-			assertEquals(etag,
-					expect304(client().findTagFamilyByUuid(PROJECT_NAME, tagfamily.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true));
-
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findTagFamilyByUuid(PROJECT_NAME, tagfamily.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true);
-			expect304(client().findTagFamilyByUuid(PROJECT_NAME, tagfamily.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true);
+			expect304(client().findTagFamilyByUuid(PROJECT_NAME, tagfamily.getUuid(), new NodeParametersImpl().setLanguages("ru")), etag, true);
 		}
 
 	}

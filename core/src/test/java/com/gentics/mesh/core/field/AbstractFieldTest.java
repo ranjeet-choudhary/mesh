@@ -78,7 +78,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected void assertList(int expectedItems, String fieldKey, String listType, NodeResponse response) {
-		Field deserializedList = response.getFields().getField(fieldKey, FieldTypes.LIST, listType, false);
+		Field deserializedList = response.getFields().getField(fieldKey, FieldTypes.LIST, listType);
 		assertNotNull(deserializedList);
 		FieldList<?> listField = (FieldList<?>) deserializedList;
 		assertEquals("The list of type {" + listType + "} did not contain the expected amount of items.", expectedItems, listField.getItems().size());

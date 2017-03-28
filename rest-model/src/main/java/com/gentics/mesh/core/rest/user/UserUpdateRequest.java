@@ -33,7 +33,7 @@ public class UserUpdateRequest implements RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user")
-	private ExpandableNode nodeReference;
+	private NodeReference nodeReference;
 
 	public UserUpdateRequest() {
 	}
@@ -165,7 +165,7 @@ public class UserUpdateRequest implements RestModel {
 	 * 
 	 * @return Node reference of the user
 	 */
-	public ExpandableNode getNodeReference() {
+	public NodeReference getNodeReference() {
 		return nodeReference;
 	}
 
@@ -176,7 +176,7 @@ public class UserUpdateRequest implements RestModel {
 	 *            Node reference of the user
 	 * @return Fluent API
 	 */
-	public UserUpdateRequest setNodeReference(ExpandableNode nodeReference) {
+	public UserUpdateRequest setNodeReference(NodeReference nodeReference) {
 		this.nodeReference = nodeReference;
 		return this;
 	}

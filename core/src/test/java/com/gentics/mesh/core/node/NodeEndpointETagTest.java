@@ -37,9 +37,11 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db().noTx()) {
-			MeshResponse<NodeListResponse> response = client().findNodes(PROJECT_NAME).invoke();
+			MeshResponse<NodeListResponse> response = client().findNodes(PROJECT_NAME)
+					.invoke();
 			latchFor(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
+			String etag = ETag.extract(response.getResponse()
+					.getHeader(ETAG));
 			assertNotNull(etag);
 
 			expect304(client().findNodes(PROJECT_NAME), etag, true);
@@ -54,9 +56,11 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			Node node = content();
 			String nodeUuid = node.getUuid();
 
-			MeshResponse<TagListResponse> response = client().findTagsForNode(PROJECT_NAME, nodeUuid).invoke();
+			MeshResponse<TagListResponse> response = client().findTagsForNode(PROJECT_NAME, nodeUuid)
+					.invoke();
 			latchFor(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
+			String etag = ETag.extract(response.getResponse()
+					.getHeader(ETAG));
 			assertNotNull(etag);
 
 			expect304(client().findTagsForNode(PROJECT_NAME, nodeUuid), etag, true);
@@ -74,10 +78,13 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testReadChildren() {
 		try (NoTx noTx = db().noTx()) {
-			String uuid = project().getBaseNode().getUuid();
-			MeshResponse<NodeListResponse> response = client().findNodeChildren(PROJECT_NAME, uuid).invoke();
+			String uuid = project().getBaseNode()
+					.getUuid();
+			MeshResponse<NodeListResponse> response = client().findNodeChildren(PROJECT_NAME, uuid)
+					.invoke();
 			latchFor(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
+			String etag = ETag.extract(response.getResponse()
+					.getHeader(ETAG));
 			assertNotNull(etag);
 
 			expect304(client().findNodeChildren(PROJECT_NAME, uuid), etag, true);
@@ -89,7 +96,8 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			request.setLanguage("en");
 			request.setParentNode(new NodeReference().setUuid(uuid));
 			request.setSchema(new SchemaReference().setName("content"));
-			request.getFields().put("name", FieldUtil.createStringField("someName"));
+			request.getFields()
+					.put("name", FieldUtil.createStringField("someName"));
 			NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, request));
 
 			// We added another node but it has not yet been published
@@ -108,29 +116,33 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			Node node = content();
 
 			// Inject the reference node field
-			Schema schema = node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema();
+			Schema schema = node.getGraphFieldContainer("en")
+					.getSchemaContainerVersion()
+					.getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
-			node.getGraphFieldContainer("en").getSchemaContainerVersion().setSchema(schema);
-			node.getGraphFieldContainer("en").createNode("reference", folder("2015"));
+			node.getGraphFieldContainer("en")
+					.getSchemaContainerVersion()
+					.setSchema(schema);
+			node.getGraphFieldContainer("en")
+					.createNode("reference", folder("2015"));
 
-			MeshResponse<NodeResponse> response = client().findNodeByUuid(PROJECT_NAME, node.getUuid()).invoke();
+			MeshResponse<NodeResponse> response = client().findNodeByUuid(PROJECT_NAME, node.getUuid())
+					.invoke();
 			latchFor(response);
 			String etag = node.getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
+			assertEquals(etag, ETag.extract(response.getResponse()
+					.getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
 			MeshRequest<NodeResponse> request = client().findNodeByUuid(PROJECT_NAME, node.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
 			assertNotEquals("A different etag should have been generated since we are not requesting the expanded node.", etag,
-					expectNo304(client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true));
+					expectNo304(client().findNodeByUuid(PROJECT_NAME, node.getUuid()), etag, true));
 
-			String newETag = expectNo304(
-					client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandedFieldNames("reference")), etag, true);
+			String newETag = expectNo304(client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new PagingParametersImpl().setPage(1)), etag, true);
 			assertNotEquals("We added parameters and thus a new etag should have been generated.", newETag,
-					expectNo304(
-							client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandedFieldNames("reference", "bla")),
-							newETag, true));
+					expectNo304(client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl()), newETag, true));
 
 		}
 

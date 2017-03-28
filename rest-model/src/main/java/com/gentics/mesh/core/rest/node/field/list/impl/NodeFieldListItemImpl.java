@@ -6,7 +6,7 @@ public class NodeFieldListItemImpl implements NodeFieldListItem {
 
 	private String uuid;
 
-	private String url;
+	private String path;
 
 	public NodeFieldListItemImpl() {
 	}
@@ -20,30 +20,20 @@ public class NodeFieldListItemImpl implements NodeFieldListItem {
 		return uuid;
 	}
 
-	/**
-	 * Set the uuid of the node item.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	public NodeFieldListItemImpl setUuid(String uuid) {
+	@Override
+	public NodeFieldListItem setUuid(String uuid) {
 		this.uuid = uuid;
 		return this;
 	}
 
 	@Override
 	public String getPath() {
-		return url;
+		return path;
 	}
 
-	/**
-	 * Set the webroot URL
-	 * 
-	 * @param url webroot URL
-	 * @return this instance
-	 */
-	public NodeFieldListItemImpl setUrl(String url) {
-		this.url = url;
+	@Override
+	public NodeFieldListItem setPath(String path) {
+		this.path = path;
 		return this;
 	}
 }

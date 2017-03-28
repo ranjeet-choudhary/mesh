@@ -70,62 +70,6 @@ public interface NodeParameters extends ParameterProvider {
 	}
 
 	/**
-	 * Set the <code>{@value #EXPANDALL_QUERY_PARAM_KEY}</code> request parameter flag.
-	 * 
-	 * @param flag
-	 * @return
-	 * @deprecated This feature will be removed in a future mesh version due to graphql support
-	 */
-	@Deprecated
-	default NodeParameters setExpandAll(boolean flag) {
-		setParameter(EXPANDALL_QUERY_PARAM_KEY, String.valueOf(flag));
-		return this;
-	}
-
-	/**
-	 * Return the <code>{@value #EXPANDALL_QUERY_PARAM_KEY}</code> query parameter flag value.
-	 * 
-	 * @return
-	 * @deprecated This feature will be removed in a future mesh version due to graphql support
-	 */
-	@Deprecated
-	default boolean getExpandAll() {
-		String value = getParameter(EXPANDALL_QUERY_PARAM_KEY);
-		if (value != null) {
-			return Boolean.valueOf(value);
-		}
-		return false;
-	}
-
-	/**
-	 * Set a list of field names which should be expanded.
-	 * 
-	 * @param fieldNames
-	 * @deprecated This feature will be removed in a future mesh version due to graphql support
-	 */
-	@Deprecated
-	default NodeParameters setExpandedFieldNames(String... fieldNames) {
-		setParameter(EXPANDFIELDS_QUERY_PARAM_KEY, convertToStr(fieldNames));
-		return this;
-	}
-
-	/**
-	 * Return the field names which should be expanded.
-	 * 
-	 * @return
-	 * @deprecated This feature will be removed in a future mesh version due to graphql support
-	 */
-	@Deprecated
-	default String[] getExpandedFieldNames() {
-		String fieldNames = getParameter(EXPANDFIELDS_QUERY_PARAM_KEY);
-		if (fieldNames != null) {
-			return fieldNames.split(",");
-		} else {
-			return new String[0];
-		}
-	}
-
-	/**
 	 * @see #getLanguages()
 	 * @return
 	 */
@@ -133,12 +77,4 @@ public interface NodeParameters extends ParameterProvider {
 		return Arrays.asList(getLanguages());
 	}
 
-	/**
-	 * @see #getExpandedFieldNames()
-	 * @return
-	 */
-	@Deprecated
-	default List<String> getExpandedFieldnameList() {
-		return Arrays.asList(getExpandedFieldNames());
-	}
 }

@@ -51,12 +51,8 @@ public class SchemaEndpointETagTest extends AbstractETagTest {
 			MeshRequest<SchemaResponse> request = client().findSchemaByUuid(schema.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
-			// The node has no node reference and thus expanding will not affect the etag
-			assertThat(expect304(client().findSchemaByUuid(schema.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true)).contains(etag);
-
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findSchemaByUuid(schema.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true);
-			expect304(client().findSchemaByUuid(schema.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true);
+			expect304(client().findSchemaByUuid(schema.getUuid(), new NodeParametersImpl().setLanguages("ru")), etag, true);
 		}
 
 	}

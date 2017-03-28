@@ -1,30 +1,26 @@
 package com.gentics.mesh.core.rest.node;
 
 import java.util.ArrayDeque;
-
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
-import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.NodeField;
-import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.NodeParameters;
 
 /**
  * POJO for the node rest response model.
  */
-public class NodeResponse extends AbstractGenericRestResponse implements NodeField, NodeFieldListItem, ExpandableNode {
+public class NodeResponse extends AbstractGenericRestResponse {
 
 	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")
 	private String language;
@@ -263,7 +259,11 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		this.languagePaths = languagePaths;
 	}
 
-	@Override
+	/**
+	 * Get the webroot URL to the node
+	 * 
+	 * @return webroot URL
+	 */
 	public String getPath() {
 		return path;
 	}
@@ -321,10 +321,30 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		return this;
 	}
 
-	@JsonIgnore
-	@Override
-	public String getType() {
-		return FieldTypes.NODE.toString();
+	/**
+	 * Transform the node information into a field.
+	 * 
+	 * @return
+	 */
+	public NodeField toField() {
+		NodeField field = new NodeFieldImpl();
+		field.setPath(getPath());
+		field.setUuid(getUuid());
+		field.setLanguagePaths(getLanguagePaths());
+		return field;
+	}
+
+	/**
+	 * Create a node reference using the node.
+	 * 
+	 * @return
+	 */
+	public NodeReference toReference() {
+		NodeReference reference = new NodeReference();
+		reference.setUuid(getUuid());
+		reference.setPath(getPath());
+		reference.setSchema(getSchema());
+		return reference;
 	}
 
 }

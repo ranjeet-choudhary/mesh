@@ -26,9 +26,11 @@ public class ProjectEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db().noTx()) {
-			MeshResponse<ProjectListResponse> response = client().findProjects().invoke();
+			MeshResponse<ProjectListResponse> response = client().findProjects()
+					.invoke();
 			latchFor(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
+			String etag = ETag.extract(response.getResponse()
+					.getHeader(ETAG));
 			assertNotNull(etag);
 
 			expect304(client().findProjects(), etag, true);
@@ -40,25 +42,19 @@ public class ProjectEndpointETagTest extends AbstractETagTest {
 	public void testReadOne() {
 		try (NoTx noTx = db().noTx()) {
 			Project project = project();
-			MeshResponse<ProjectResponse> response = client().findProjectByUuid(project.getUuid()).invoke();
+			MeshResponse<ProjectResponse> response = client().findProjectByUuid(project.getUuid())
+					.invoke();
 			latchFor(response);
 			String etag = project.getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
+			assertEquals(etag, ETag.extract(response.getResponse()
+					.getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
 			MeshRequest<ProjectResponse> request = client().findProjectByUuid(project.getUuid());
 			assertEquals(etag, expect304(request, etag, true));
 
-			// The node has no node reference and thus expanding will not affect the etag
-			assertEquals(etag,
-					expect304(client().findProjectByUuid(project.getUuid()),
-							etag, true));
-
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findProjectByUuid(project.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag,
-					true);
-			expect304(client().findProjectByUuid(project.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag,
-					true);
+			expect304(client().findProjectByUuid(project.getUuid(), new NodeParametersImpl().setLanguages("ru")), etag, true);
 		}
 
 	}

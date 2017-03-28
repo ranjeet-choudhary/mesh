@@ -8,14 +8,14 @@ import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 
 /**
  * Deserializer which is used to deserialize node list items.
+ * @deprecated We should be able to remove this deserializer
  */
+@Deprecated
 public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldListItem> {
 
 	@Override
@@ -37,17 +37,9 @@ public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldLis
 	public NodeFieldListItem deserialize(JsonNode jsonNode, JsonParser jsonParser) throws JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
 
-		NodeResponse nodeItem = null;
-		try {
-			// Try to deserialize the node response in the expanded form.
-			nodeItem = JsonUtil.readValue(jsonNode.toString(), NodeResponse.class);
-		} catch (GenericRestException e) {
-			// Fallback and deseralize the element using the collapsed form.
-			NodeFieldListItemImpl collapsedItem = oc.treeToValue(jsonNode, NodeFieldListItemImpl.class);
-			nodeItem = new NodeResponse();
-			nodeItem.setUuid(collapsedItem.getUuid());
-		}
-		return nodeItem;
+		// Fallback and deseralize the element using the collapsed form.
+		NodeFieldListItemImpl collapsedItem = oc.treeToValue(jsonNode, NodeFieldListItemImpl.class);
+		return collapsedItem;
 	}
 
 }

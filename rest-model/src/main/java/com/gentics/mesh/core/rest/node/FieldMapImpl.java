@@ -70,7 +70,7 @@ public class FieldMapImpl implements FieldMap {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Field> T getField(String key, FieldTypes type, String listType, boolean expand) {
+	public <T extends Field> T getField(String key, FieldTypes type, String listType) {
 
 		try {
 			JsonNode jsonNode = node.get(key);
@@ -97,7 +97,7 @@ public class FieldMapImpl implements FieldMap {
 			case LIST:
 				return (T) transformListFieldJsonNode(jsonNode, key, listType);
 			case NODE:
-				return (T) transformNodeFieldJsonNode(jsonNode, key, expand);
+				return (T) transformNodeFieldJsonNode(jsonNode, key);
 			case MICRONODE:
 				return (T) transformMicronodeFieldJsonNode(jsonNode, key);
 			default:
@@ -123,7 +123,8 @@ public class FieldMapImpl implements FieldMap {
 			NodeFieldListImpl nodeListField = new NodeFieldListImpl();
 			// NodeFieldListItemDeserializer deser = new NodeFieldListItemDeserializer();
 			for (JsonNode node : jsonNode) {
-				nodeListField.getItems().add(mapper.treeToValue(node, NodeFieldListItem.class));
+				nodeListField.getItems()
+						.add(mapper.treeToValue(node, NodeFieldListItem.class));
 			}
 			// NodeFieldListItem[] itemsArray = oc.treeToValue(jsonNode, NodeFieldListItemImpl[].class);
 			// nodeListField.getItems().addAll(Arrays.asList(itemsArray));
@@ -149,7 +150,8 @@ public class FieldMapImpl implements FieldMap {
 			}
 			MicronodeFieldList micronodeFieldList = new MicronodeFieldListImpl();
 			for (JsonNode node : jsonNode) {
-				micronodeFieldList.getItems().add(JsonUtil.readValue(node.toString(), MicronodeResponse.class));
+				micronodeFieldList.getItems()
+						.add(JsonUtil.readValue(node.toString(), MicronodeResponse.class));
 			}
 			return micronodeFieldList;
 		// Basic types
@@ -241,7 +243,8 @@ public class FieldMapImpl implements FieldMap {
 			if (jsonNode.isNull()) {
 				return null;
 			} else {
-				MicronodeResponse field = JsonUtil.getMapper().treeToValue(jsonNode, MicronodeResponse.class);
+				MicronodeResponse field = JsonUtil.getMapper()
+						.treeToValue(jsonNode, MicronodeResponse.class);
 				return field;
 			}
 		} catch (IOException e) {
@@ -284,34 +287,25 @@ public class FieldMapImpl implements FieldMap {
 	 * 
 	 * @param jsonNode
 	 * @param key
-	 * @param expand
 	 * @return
 	 * @throws IOException
 	 */
-	private NodeField transformNodeFieldJsonNode(JsonNode jsonNode, String key, boolean expand) throws IOException {
+	private NodeField transformNodeFieldJsonNode(JsonNode jsonNode, String key) throws IOException {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
 			Object pojo = ((POJONode) jsonNode).getPojo();
 			if (pojo != null) {
-				if (pojo instanceof NodeFieldImpl) {
-					return pojoNodeToValue(jsonNode, NodeFieldImpl.class, key);
-				} else {
-					return pojoNodeToValue(jsonNode, NodeResponse.class, key);
-				}
+				return pojoNodeToValue(jsonNode, NodeFieldImpl.class, key);
 			} else {
 				return null;
 			}
 		}
 
 		ObjectMapper mapper = JsonUtil.getMapper();
-		if (expand) {
-			return JsonUtil.readValue(jsonNode.toString(), NodeResponse.class);
-		} else {
-			if (jsonNode.isNull()) {
-				return null;
-			}
-			return mapper.treeToValue(jsonNode, NodeFieldImpl.class);
+		if (jsonNode.isNull()) {
+			return null;
 		}
+		return mapper.treeToValue(jsonNode, NodeFieldImpl.class);
 	}
 
 	/**
@@ -368,7 +362,8 @@ public class FieldMapImpl implements FieldMap {
 		if (jsonNode.isPojo()) {
 			return pojoNodeToValue(jsonNode, BinaryField.class, key);
 		}
-		return JsonUtil.getMapper().treeToValue(jsonNode, BinaryFieldImpl.class);
+		return JsonUtil.getMapper()
+				.treeToValue(jsonNode, BinaryFieldImpl.class);
 	}
 
 	private StringField transformStringFieldJsonNode(JsonNode jsonNode, String key) throws JsonProcessingException {
@@ -407,14 +402,15 @@ public class FieldMapImpl implements FieldMap {
 		if (clazz.isAssignableFrom(pojo.getClass())) {
 			return clazz.cast(pojo);
 		} else {
-			throw error(BAD_REQUEST,
-					"The field value for {" + key + "} is not of correct type. Stored POJO was of class {" + pojo.getClass().getName() + "}");
+			throw error(BAD_REQUEST, "The field value for {" + key + "} is not of correct type. Stored POJO was of class {" + pojo.getClass()
+					.getName() + "}");
 		}
 	}
 
 	private <I, AT> FieldList<I> getBasicList(String fieldKey, Class<AT> clazzOfJsonArray, FieldList<I> list, Class<I> classOfItem, I[] itemsArray) {
 		if (itemsArray != null) {
-			list.getItems().addAll((List<I>) Arrays.asList(itemsArray));
+			list.getItems()
+					.addAll((List<I>) Arrays.asList(itemsArray));
 		}
 		return list;
 	}
@@ -432,10 +428,6 @@ public class FieldMapImpl implements FieldMap {
 	@Override
 	public DateFieldListImpl getDateFieldList(String key) {
 		return getField(key, FieldTypes.LIST, "date");
-	}
-
-	private <T extends Field> T getField(String key, FieldTypes type, String listType) {
-		return getField(key, type, listType, false);
 	}
 
 	@Override
@@ -548,26 +540,6 @@ public class FieldMapImpl implements FieldMap {
 		ObjectNode objectNode = ((ObjectNode) node);
 		JsonNode object = objectNode.remove(fieldKey);
 		return object != null;
-	}
-
-	@Override
-	public NodeResponse getNodeFieldExpanded(String key) {
-		return getField(key, FieldTypes.NODE, null, true);
-	}
-
-	@Override
-	public boolean isExpandedNodeField(String fieldKey) {
-		JsonNode field = node.get(fieldKey);
-		if (field == null) {
-			return false;
-		}
-		if (field.isObject() && field.has("fields")) {
-			return true;
-		}
-		if (field.isPojo()) {
-			return ((POJONode) field).getPojo() instanceof NodeResponse;
-		}
-		return false;
 	}
 
 	@Override

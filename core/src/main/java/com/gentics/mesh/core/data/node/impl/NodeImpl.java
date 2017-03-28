@@ -1085,7 +1085,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		ContainerType type = forVersion(new VersioningParametersImpl(ac).getVersion());
 		if (ac.getNodeParameters()
 				.getResolveLinks() != LinkType.OFF) {
-			listItem.setUrl(MeshInternal.get()
+			listItem.setPath(MeshInternal.get()
 					.webRootLinkReplacer()
 					.resolve(releaseUuid, type, this, ac.getNodeParameters()
 							.getResolveLinks(), languageTags));
@@ -1965,24 +1965,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			keyBuilder.append("-");
 			keyBuilder.append(container.getETag(ac));
 		}
-
-		/**
-		 * Expansion (all)
-		 * 
-		 * The expandAll parameter changes the json response and thus must be included in the etag computation.
-		 */
-		if (ac.getNodeParameters()
-				.getExpandAll()) {
-			keyBuilder.append("-");
-			keyBuilder.append("expand:true");
-		}
-
-		// expansion (selective)
-		String expandedFields = Arrays.toString(ac.getNodeParameters()
-				.getExpandedFieldNames());
-		keyBuilder.append("-");
-		keyBuilder.append("expandFields:");
-		keyBuilder.append(expandedFields);
 
 		// release specific tags
 		for (Tag tag : getTags(release)) {

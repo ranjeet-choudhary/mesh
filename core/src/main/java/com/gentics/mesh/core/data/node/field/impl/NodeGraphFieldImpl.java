@@ -70,8 +70,10 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 
 		// Handle Update / Create
-		BootstrapInitializer boot = MeshInternal.get().boot();
-		Node node = boot.nodeRoot().findByUuid(nodeField.getUuid());
+		BootstrapInitializer boot = MeshInternal.get()
+				.boot();
+		Node node = boot.nodeRoot()
+				.findByUuid(nodeField.getUuid());
 		if (node == null) {
 			// TODO We want to delete the field when the field has been explicitly set to null
 			if (log.isDebugEnabled()) {
@@ -118,43 +120,43 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		// TODO handle null across all types
 		// if (getNode() != null) {
 		NodeParametersImpl parameters = ac.getNodeParameters();
-		boolean expandField = ac.getNodeParameters().getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		Node node = getNode();
 
 		// Check whether the user is allowed to read the node reference
-		boolean canReadNode = ac.getUser().canReadNode(ac, node);
+		boolean canReadNode = ac.getUser()
+				.canReadNode(ac, node);
 		if (!canReadNode) {
 			return null;
 		}
 
-		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
-			return node.transformToRestSync(ac, level, languageTags.toArray(new String[languageTags.size()]));
-		} else {
-			NodeFieldImpl nodeField = new NodeFieldImpl();
-			nodeField.setUuid(node.getUuid());
-			LinkType type = ac.getNodeParameters().getResolveLinks();
-			if (type != LinkType.OFF) {
+		NodeFieldImpl nodeField = new NodeFieldImpl();
+		nodeField.setUuid(node.getUuid());
+		LinkType type = ac.getNodeParameters()
+				.getResolveLinks();
+		if (type != LinkType.OFF) {
 
-				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-				Release release = ac.getRelease();
-				ContainerType containerType = forVersion(ac.getVersioningParameters().getVersion());
+			WebRootLinkReplacer linkReplacer = MeshInternal.get()
+					.webRootLinkReplacer();
+			Release release = ac.getRelease();
+			ContainerType containerType = forVersion(ac.getVersioningParameters()
+					.getVersion());
 
-				// Set the webroot path for the currently active language
-				nodeField.setPath(
-						linkReplacer.resolve(release.getUuid(), containerType, node, type, languageTags.toArray(new String[languageTags.size()])));
+			// Set the webroot path for the currently active language
+			nodeField.setPath(
+					linkReplacer.resolve(release.getUuid(), containerType, node, type, languageTags.toArray(new String[languageTags.size()])));
 
-				// Set the languagePaths for all field containers
-				Map<String, String> languagePaths = new HashMap<>();
-				for (GraphFieldContainer currentFieldContainer : node.getGraphFieldContainers(release, containerType)) {
-					Language currLanguage = currentFieldContainer.getLanguage();
-					String languagePath = linkReplacer.resolve(release.getUuid(), containerType, node, type, currLanguage.getLanguageTag());
-					languagePaths.put(currLanguage.getLanguageTag(), languagePath);
-				}
-				nodeField.setLanguagePaths(languagePaths);
-
+			// Set the languagePaths for all field containers
+			Map<String, String> languagePaths = new HashMap<>();
+			for (GraphFieldContainer currentFieldContainer : node.getGraphFieldContainers(release, containerType)) {
+				Language currLanguage = currentFieldContainer.getLanguage();
+				String languagePath = linkReplacer.resolve(release.getUuid(), containerType, node, type, currLanguage.getLanguageTag());
+				languagePaths.put(currLanguage.getLanguageTag(), languagePath);
 			}
-			return nodeField;
+			nodeField.setLanguagePaths(languagePaths);
+
 		}
+		return nodeField;
+
 	}
 
 	@Override
@@ -193,7 +195,8 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			String nodeUuid = nodeRestField.getUuid();
 			// The node graph field is a edge so getNode should never be null. Lets check it anyways.
 			if (nodeA != null) {
-				return nodeA.getUuid().equals(nodeUuid);
+				return nodeA.getUuid()
+						.equals(nodeUuid);
 			}
 			// If both are null - both are equal
 			if (nodeA == null && nodeRestField.getUuid() == null) {

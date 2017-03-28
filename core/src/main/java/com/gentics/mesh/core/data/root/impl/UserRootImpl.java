@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -173,7 +172,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 				.passwordEncoder()
 				.encode(requestModel.getPassword()));
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
-		ExpandableNode reference = requestModel.getNodeReference();
+		NodeReference reference = requestModel.getNodeReference();
 		batch.store(user, true);
 
 		if (!isEmpty(groupUuid)) {

@@ -26,7 +26,6 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en");
-		parameters.setExpandedFieldNames(expandedFieldNames);
 		return call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
 	}
 

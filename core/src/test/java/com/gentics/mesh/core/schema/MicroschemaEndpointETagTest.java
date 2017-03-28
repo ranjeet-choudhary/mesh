@@ -51,13 +51,8 @@ public class MicroschemaEndpointETagTest extends AbstractETagTest {
 			MeshRequest<MicroschemaResponse> request = client().findMicroschemaByUuid(schema.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
-			// The node has no node reference and thus expanding will not affect the etag
-			assertThat(expect304(client().findMicroschemaByUuid(schema.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true))
-					.contains(etag);
-
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findMicroschemaByUuid(schema.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true);
-			expect304(client().findMicroschemaByUuid(schema.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true);
+			expect304(client().findMicroschemaByUuid(schema.getUuid(), new NodeParametersImpl().setLanguages("en,ru")), etag, true);
 		}
 
 	}

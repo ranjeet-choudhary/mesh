@@ -3,18 +3,16 @@ package com.gentics.mesh.core.rest.user;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
-import com.gentics.mesh.core.rest.node.NodeResponse;
 
 /**
  * User response model.
  */
 public class UserResponse extends AbstractGenericRestResponse {
-	
+
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Lastname of the user.")
 	private String lastname;
@@ -33,7 +31,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related.")
-	private ExpandableNode nodeReference;
+	private NodeReference nodeReference;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether the user is enabled or disabled. Deleting a user will disable it.")
@@ -144,28 +142,8 @@ public class UserResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @return Node reference or null if no reference has been set
 	 */
-	public ExpandableNode getNodeReference() {
+	public NodeReference getNodeReference() {
 		return nodeReference;
-	}
-
-	@JsonIgnore
-	public NodeResponse getExpandedNodeReference() {
-		return (NodeResponse) nodeReference;
-	}
-
-	@JsonIgnore
-	public NodeReference getReferencedNodeReference() {
-		return (NodeReference) nodeReference;
-	}
-
-	@JsonIgnore
-	public boolean isReference() {
-		return (nodeReference instanceof NodeReference);
-	}
-
-	@JsonIgnore
-	public boolean isExpanded() {
-		return (nodeReference instanceof NodeResponse);
 	}
 
 	/**
@@ -174,19 +152,8 @@ public class UserResponse extends AbstractGenericRestResponse {
 	 * @param nodeReference
 	 * @return Fluent API
 	 */
-	public UserResponse setNodeReference(ExpandableNode nodeReference) {
+	public UserResponse setNodeReference(NodeReference nodeReference) {
 		this.nodeReference = nodeReference;
-		return this;
-	}
-
-	/**
-	 * Set the expanded node response.
-	 * 
-	 * @param nodeResponse
-	 * @return Fluent API
-	 */
-	public UserResponse setNodeResponse(NodeResponse nodeResponse) {
-		this.nodeReference = nodeResponse;
 		return this;
 	}
 

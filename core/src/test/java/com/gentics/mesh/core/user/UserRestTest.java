@@ -37,7 +37,7 @@ public class UserRestTest {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(UUIDUtil.randomUUID());
 		nodeResponse.setSchema(new SchemaReference().setName("content"));
-		response.setNodeResponse(nodeResponse);
+		response.setNodeReference(nodeResponse.toReference());
 		String json = JsonUtil.toJson(response);
 		assertNotNull(json);
 

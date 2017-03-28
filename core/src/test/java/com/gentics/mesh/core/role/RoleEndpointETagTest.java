@@ -49,12 +49,8 @@ public class RoleEndpointETagTest extends AbstractETagTest {
 			MeshRequest<RoleResponse> request = client().findRoleByUuid(role.getUuid());
 			assertEquals(etag, expect304(request, etag, true));
 
-			// The role has no node reference and thus expanding will not affect the etag
-			assertEquals(etag, expect304(client().findRoleByUuid(role.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true));
-
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findRoleByUuid(role.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true);
-			expect304(client().findRoleByUuid(role.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true);
+			expect304(client().findRoleByUuid(role.getUuid(), new NodeParametersImpl().setLanguages("ru")), etag, true);
 		}
 
 	}

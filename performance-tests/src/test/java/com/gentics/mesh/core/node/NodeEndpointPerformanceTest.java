@@ -42,8 +42,8 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 	public void testReadNav() {
 		addNodes();
 		String baseUuid = db().noTx(() -> project().getBaseNode().getUuid());
-		loggingStopWatch(logger, "node.read-nav-expanded-full-4", 200, (step) -> {
-			call(() -> client().loadNavigation(PROJECT_NAME, baseUuid, new NodeParametersImpl().setExpandAll(true).setResolveLinks(LinkType.FULL),
+		loggingStopWatch(logger, "node.read-nav-4", 200, (step) -> {
+			call(() -> client().loadNavigation(PROJECT_NAME, baseUuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL),
 					new NavigationParametersImpl().setMaxDepth(4)));
 		});
 	}
@@ -65,10 +65,6 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 		String uuid = db().noTx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.read-by-uuid", 7000, (step) -> {
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
-		});
-
-		loggingStopWatch(logger, "node.read-by-uuid-full", 800, (step) -> {
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setExpandAll(true).setResolveLinks(LinkType.FULL)));
 		});
 	}
 

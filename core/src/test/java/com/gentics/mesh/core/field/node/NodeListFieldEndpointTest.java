@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.node;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -32,7 +33,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
@@ -217,7 +217,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	public void testCreateNodeWithField() {
 		try (NoTx noTx = db().noTx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
-			NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folder("news").getUuid());
+			NodeFieldListItem item = new NodeFieldListItemImpl().setUuid(folder("news").getUuid());
 			listField.add(item);
 			NodeResponse response = createNode(FIELD_NAME, listField);
 			NodeFieldList listFromResponse = response.getFields().getNodeFieldList(FIELD_NAME);

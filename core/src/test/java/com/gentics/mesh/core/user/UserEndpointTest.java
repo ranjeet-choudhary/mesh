@@ -99,21 +99,20 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid = db().noTx(() -> user().getUuid());
 		String oldHash = db().noTx(() -> user().getPasswordHash());
 		assertNull("Initially the token code should be null", db().noTx(() -> user().getResetToken()));
-		assertNull("Initially the token issue timestamp should be null",
-				db().noTx(() -> user().getResetTokenIssueTimestamp()));
+		assertNull("Initially the token issue timestamp should be null", db().noTx(() -> user().getResetTokenIssueTimestamp()));
 
 		// 1. Get new token
 		UserTokenResponse response = call(() -> client().getUserToken(uuid));
-		assertNotNull("The user token code should now be set to a non-null value but it was not.",
-				db().noTx(() -> user().getResetToken()));
-		assertNotNull("The token code issue timestamp should be set.",
-				db().noTx(() -> user().getResetTokenIssueTimestamp()));
+		assertNotNull("The user token code should now be set to a non-null value but it was not.", db().noTx(() -> user().getResetToken()));
+		assertNotNull("The token code issue timestamp should be set.", db().noTx(() -> user().getResetTokenIssueTimestamp()));
 
 		// 2. Fake an old issue timestamp
 		db().noTx(() -> user().setResetTokenIssueTimestamp(System.currentTimeMillis() - 1000 * 60 * 60));
 
 		// 2. Logout the current client user
-		client().logout().toBlocking().value();
+		client().logout()
+				.toBlocking()
+				.value();
 
 		// 3. Update the user using the token code
 		UserUpdateRequest request = new UserUpdateRequest();
@@ -124,8 +123,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// 4. Assert that the password was not updated
 		String newHash = db().noTx(() -> user().getPasswordHash());
 		assertEquals("The password hash has not been updated.", oldHash, newHash);
-		assertNull("The token code should have been set to null since it has expired.",
-				db().noTx(() -> user().getResetToken()));
+		assertNull("The token code should have been set to null since it has expired.", db().noTx(() -> user().getResetToken()));
 		assertNull("The token issue timestamp should have been set to null since it has expired",
 				db().noTx(() -> user().getResetTokenIssueTimestamp()));
 
@@ -139,11 +137,12 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 1. Get new token
 		UserTokenResponse response = call(() -> client().getUserToken(uuid));
-		assertNotNull("The user token code should now be set to a non-null value but it was not",
-				db().noTx(() -> user().getResetToken()));
+		assertNotNull("The user token code should now be set to a non-null value but it was not", db().noTx(() -> user().getResetToken()));
 
 		// 2. Logout the current client user
-		client().logout().toBlocking().value();
+		client().logout()
+				.toBlocking()
+				.value();
 
 		// 3. Update the user using the token code
 		UserUpdateRequest request = new UserUpdateRequest();
@@ -152,8 +151,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 4. Assert that the password was updated
 		String newHash = db().noTx(() -> user().getPasswordHash());
-		assertNull("The token code should have been set to null since it is now used up",
-				db().noTx(() -> user().getResetToken()));
+		assertNull("The token code should have been set to null since it is now used up", db().noTx(() -> user().getResetToken()));
 
 		assertNotEquals("The password hash has not been updated.", oldHash, newHash);
 	}
@@ -168,13 +166,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().getUserToken(uuid));
 
 		// 2. Logout the current client user
-		client().logout().toBlocking().value();
+		client().logout()
+				.toBlocking()
+				.value();
 
 		// 3. Update the user using the token code
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setPassword("newPass");
-		call(() -> client().updateUser(uuid, request, new UserParametersImpl("bogusToken")), UNAUTHORIZED,
-				"user_error_provided_token_invalid");
+		call(() -> client().updateUser(uuid, request, new UserParametersImpl("bogusToken")), UNAUTHORIZED, "user_error_provided_token_invalid");
 
 		// 4. Assert that the password was not updated
 		String newHash = db().noTx(() -> user().getPasswordHash());
@@ -192,7 +191,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().getUserToken(uuid));
 
 		// 2. Logout the current client user
-		client().logout().toBlocking().value();
+		client().logout()
+				.toBlocking()
+				.value();
 
 		// 3. Update the user using the token code
 		UserUpdateRequest request = new UserUpdateRequest();
@@ -211,8 +212,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserTokenResponse response = call(() -> client().getUserToken(uuid));
 		assertThat(response.getToken()).isNotEmpty();
 		String storedToken = db().noTx(() -> user().getResetToken());
-		assertEquals("The token that is currently stored did not match up with the returned token by the api",
-				storedToken, response.getToken());
+		assertEquals("The token that is currently stored did not match up with the returned token by the api", storedToken, response.getToken());
 	}
 
 	@Test
@@ -251,8 +251,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			User user = user();
 			String uuid = user.getUuid();
 
-			UserResponse userResponse = call(
-					() -> client().findUserByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
+			UserResponse userResponse = call(() -> client().findUserByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(userResponse.getRolePerms());
 			assertThat(userResponse.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, CREATE, UPDATE, DELETE);
 		}
@@ -262,16 +261,20 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadUserWithMultipleGroups() {
 		try (NoTx noTx = db().noTx()) {
 			User user = user();
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups()
+					.size());
 
 			for (int i = 0; i < 10; i++) {
-				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
+				Group extraGroup = meshRoot().getGroupRoot()
+						.create("group_" + i, user());
 				extraGroup.addUser(user());
 			}
 
-			assertEquals(11, user().getGroups().size());
+			assertEquals(11, user().getGroups()
+					.size());
 			UserResponse response = call(() -> client().findUserByUuid(user().getUuid()));
-			assertEquals(11, response.getGroups().size());
+			assertEquals(11, response.getGroups()
+					.size());
 		}
 	}
 
@@ -284,7 +287,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findUserByUuid(uuid).invoke());
+				set.add(client().findUserByUuid(uuid)
+						.invoke());
 			}
 			validateSet(set, null);
 		}
@@ -297,7 +301,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			int nJobs = 200;
 			Set<MeshResponse<UserResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findUserByUuid(user().getUuid()).invoke());
+				set.add(client().findUserByUuid(user().getUuid())
+						.invoke());
 			}
 			for (MeshResponse<UserResponse> future : set) {
 				latchFor(future);
@@ -342,39 +347,45 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			invisibleUser.setEmailAddress("should_not_be_listed");
 			invisibleUser.addGroup(group());
 
-			assertEquals("We did not find the expected count of users attached to the user root vertex.",
-					2 + nUsers + 1, root.findAll().size());
+			assertEquals("We did not find the expected count of users attached to the user root vertex.", 2 + nUsers + 1, root.findAll()
+					.size());
 
 			// Test default paging parameters
-			MeshResponse<UserListResponse> future = client().findUsers().invoke();
+			MeshResponse<UserListResponse> future = client().findUsers()
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 			ListResponse<UserResponse> restResponse = future.result();
-			assertEquals(25, restResponse.getMetainfo().getPerPage());
-			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+			assertEquals(25, restResponse.getMetainfo()
+					.getPerPage());
+			assertEquals(1, restResponse.getMetainfo()
+					.getCurrentPage());
 			// Admin User + Guest User + Dummy User = 3
-			assertEquals(2 + nUsers, restResponse.getMetainfo().getTotalCount());
-			assertEquals(2 + nUsers, restResponse.getData().size());
+			assertEquals(2 + nUsers, restResponse.getMetainfo()
+					.getTotalCount());
+			assertEquals(2 + nUsers, restResponse.getData()
+					.size());
 
 			int perPage = 2;
 			int totalUsers = 2 + nUsers;
 			int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
-			future = client().findUsers(new PagingParametersImpl(3, perPage)).invoke();
+			future = client().findUsers(new PagingParametersImpl(3, perPage))
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 			restResponse = future.result();
 
-			assertEquals("The page did not contain the expected amount of items", perPage,
-					restResponse.getData().size());
-			assertEquals("We did not find the expected page in the list response.", 3,
-					restResponse.getMetainfo().getCurrentPage());
-			assertEquals(
-					"The amount of pages did not match. We have {" + totalUsers
-							+ "} users in the system and use a paging of {" + perPage + "}",
-					totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-			assertEquals("The total amount of items does not match the expected one", totalUsers,
-					restResponse.getMetainfo().getTotalCount());
+			assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData()
+					.size());
+			assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo()
+					.getCurrentPage());
+			assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + perPage + "}",
+					totalPages, restResponse.getMetainfo()
+							.getPageCount());
+			assertEquals(perPage, restResponse.getMetainfo()
+					.getPerPage());
+			assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo()
+					.getTotalCount());
 
 			perPage = 11;
 
@@ -392,40 +403,51 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Verify that the invisible is not part of the response
 			final String extra3Username = "should_not_be_listed";
 			List<UserResponse> filteredUserList = allUsers.parallelStream()
-					.filter(restUser -> restUser.getUsername().equals(extra3Username)).collect(Collectors.toList());
-			assertTrue("User 3 should not be part of the list since no permissions were added.",
-					filteredUserList.size() == 0);
+					.filter(restUser -> restUser.getUsername()
+							.equals(extra3Username))
+					.collect(Collectors.toList());
+			assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			future = client().findUsers(new PagingParametersImpl(1, -1)).invoke();
+			future = client().findUsers(new PagingParametersImpl(1, -1))
+					.invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = client().findUsers(new PagingParametersImpl(4242, 25)).invoke();
+			future = client().findUsers(new PagingParametersImpl(4242, 25))
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 
-			assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0,
-					future.result().getData().size());
-			assertEquals("The requested page should be set in the response but it was not", 4242,
-					future.result().getMetainfo().getCurrentPage());
-			assertEquals("The page count value was not correct.", 1, future.result().getMetainfo().getPageCount());
-			assertEquals("We did not find the correct total count value in the response", nUsers + 2,
-					future.result().getMetainfo().getTotalCount());
-			assertEquals(25, future.result().getMetainfo().getPerPage());
+			assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0, future.result()
+					.getData()
+					.size());
+			assertEquals("The requested page should be set in the response but it was not", 4242, future.result()
+					.getMetainfo()
+					.getCurrentPage());
+			assertEquals("The page count value was not correct.", 1, future.result()
+					.getMetainfo()
+					.getPageCount());
+			assertEquals("We did not find the correct total count value in the response", nUsers + 2, future.result()
+					.getMetainfo()
+					.getTotalCount());
+			assertEquals(25, future.result()
+					.getMetainfo()
+					.getPerPage());
 		}
 	}
 
 	@Test
 	public void testInvalidPageParameter() {
 		UserListResponse list = call(() -> client().findUsers(new PagingParametersImpl(1, 0)));
-		assertEquals(0, list.getData().size());
-		assertTrue(list.getMetainfo().getTotalCount() > 0);
+		assertEquals(0, list.getData()
+				.size());
+		assertTrue(list.getMetainfo()
+				.getTotalCount() > 0);
 	}
 
 	@Test
 	public void testInvalidPageParameter2() {
-		call(() -> client().findUsers(new PagingParametersImpl(-1, 25)), BAD_REQUEST,
-				"error_page_parameter_must_be_positive", "-1");
+		call(() -> client().findUsers(new PagingParametersImpl(-1, 25)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 	}
 
 	@Test
@@ -441,7 +463,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		Set<MeshResponse<UserResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			updateRequest.setUsername("dummy_user_changed" + i);
-			set.add(client().updateUser(uuid, updateRequest).invoke());
+			set.add(client().updateUser(uuid, updateRequest)
+					.invoke());
 		}
 
 		for (MeshResponse<UserResponse> response : set) {
@@ -470,9 +493,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (NoTx noTx = db().noTx()) {
 			assertThat(restUser).matches(updateRequest);
-			assertNull("The user node should have been updated and thus no user should be found.",
-					boot().userRoot().findByUsername(oldName));
-			User reloadedUser = boot().userRoot().findByUsername("dummy_user_changed");
+			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot()
+					.findByUsername(oldName));
+			User reloadedUser = boot().userRoot()
+					.findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
@@ -497,15 +521,17 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updateRequest.setLastname(lastname);
 		updateRequest.setUsername(username);
 
-		MeshResponse<UserResponse> future = client().updateUser(uuid, updateRequest).invoke();
+		MeshResponse<UserResponse> future = client().updateUser(uuid, updateRequest)
+				.invoke();
 		latchFor(future);
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 		assertThat(restUser).matches(updateRequest);
 		try (Tx tx = db().tx()) {
-			assertNull("The user node should have been updated and thus no user should be found.",
-					boot().userRoot().findByUsername(oldUsername));
-			User reloadedUser = boot().userRoot().findByUsername(username);
+			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot()
+					.findByUsername(oldUsername));
+			User reloadedUser = boot().userRoot()
+					.findByUsername(username);
 			assertNotNull(reloadedUser);
 			assertEquals(lastname, reloadedUser.getLastname());
 			assertEquals(firstname, reloadedUser.getFirstname());
@@ -541,7 +567,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			userNodeReference.setUuid(nodeUuid);
 			updateRequest.setNodeReference(userNodeReference);
 
-			MeshResponse<UserResponse> future = client().updateUser(user.getUuid(), updateRequest).invoke();
+			MeshResponse<UserResponse> future = client().updateUser(user.getUuid(), updateRequest)
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 			UserResponse restUser = future.result();
@@ -549,17 +576,20 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull(user().getReferencedNode());
 			assertNotNull(restUser.getNodeReference());
 			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
-			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
+			assertEquals(nodeUuid, restUser.getNodeReference()
+					.getUuid());
 			assertThat(restUser).matches(updateRequest);
-			assertNull("The user node should have been updated and thus no user should be found.",
-					boot().userRoot().findByUsername(username));
-			User reloadedUser = boot().userRoot().findByUsername("dummy_user_changed");
+			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot()
+					.findByUsername(username));
+			User reloadedUser = boot().userRoot()
+					.findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
 			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
 			assertEquals("dummy_user_changed", reloadedUser.getUsername());
-			assertEquals(nodeUuid, reloadedUser.getReferencedNode().getUuid());
+			assertEquals(nodeUuid, reloadedUser.getReferencedNode()
+					.getUuid());
 		}
 	}
 
@@ -580,10 +610,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setNodeReference(reference);
 
 			UserResponse response = call(() -> client().createUser(newUser));
-			assertTrue(response.isReference());
 			assertNotNull(response.getNodeReference());
-			assertNotNull(response.getReferencedNodeReference().getProjectName());
-			assertNotNull(response.getNodeReference().getUuid());
+			assertNotNull(response.getNodeReference()
+					.getUuid());
 		}
 	}
 
@@ -601,7 +630,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setGroupUuid(group().getUuid());
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
-			MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
+			MeshResponse<UserResponse> future = client().createUser(newUser)
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 			return future.result();
@@ -609,15 +639,21 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
-			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100),
-					new NodeParametersImpl().setExpandedFieldNames("nodeReference").setLanguages("en")));
+			UserListResponse userResponse = call(
+					() -> client().findUsers(new PagingParametersImpl().setPerPage(100), new NodeParametersImpl().setLanguages("en")));
 			assertNotNull(userResponse);
 
-			UserResponse foundUser = userResponse.getData().stream()
-					.filter(u -> u.getUuid().equals(userCreateResponse.getUuid())).findFirst().get();
+			UserResponse foundUser = userResponse.getData()
+					.stream()
+					.filter(u -> u.getUuid()
+							.equals(userCreateResponse.getUuid()))
+					.findFirst()
+					.get();
 			assertNotNull(foundUser.getNodeReference());
-			assertEquals(node.getUuid(), foundUser.getNodeReference().getUuid());
-			assertEquals(NodeResponse.class, foundUser.getNodeReference().getClass());
+			assertEquals(node.getUuid(), foundUser.getNodeReference()
+					.getUuid());
+			assertEquals(NodeResponse.class, foundUser.getNodeReference()
+					.getClass());
 		}
 	}
 
@@ -642,20 +678,19 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser = request;
 		}
 
-		MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse userResponse = future.result();
+		UserResponse userResponse = call(() -> client().createUser(newUser));
 
-		MeshResponse<UserResponse> userResponseFuture = client().findUserByUuid(userResponse.getUuid(),
-				new NodeParametersImpl().setExpandedFieldNames("nodeReference").setLanguages("en")).invoke();
+		MeshResponse<UserResponse> userResponseFuture = client().findUserByUuid(userResponse.getUuid(), new NodeParametersImpl().setLanguages("en"))
+				.invoke();
 		latchFor(userResponseFuture);
 		assertSuccess(userResponseFuture);
 		UserResponse userResponse2 = userResponseFuture.result();
 		assertNotNull(userResponse2);
 		assertNotNull(userResponse2.getNodeReference());
-		assertEquals(folderUuid, userResponse2.getNodeReference().getUuid());
-		assertEquals(NodeResponse.class, userResponse2.getNodeReference().getClass());
+		assertEquals(folderUuid, userResponse2.getNodeReference()
+				.getUuid());
+		assertEquals(NodeResponse.class, userResponse2.getNodeReference()
+				.getClass());
 
 	}
 
@@ -796,9 +831,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(restUser).matches(updateRequest);
 
 		try (NoTx noTx = db().noTx()) {
-			User reloadedUser = boot().userRoot().findByUuid(uuid);
-			assertNotEquals("The hash should be different and thus the password updated.", oldHash,
-					reloadedUser.getPasswordHash());
+			User reloadedUser = boot().userRoot()
+					.findByUuid(uuid);
+			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 
 	}
@@ -822,15 +857,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(restUser).matches(updateRequest);
 
 		try (NoTx noTx = db().noTx()) {
-			User reloadedUser = boot().userRoot().findByUsername(username);
-			assertNotEquals("The hash should be different and thus the password updated.", oldHash,
-					reloadedUser.getPasswordHash());
+			User reloadedUser = boot().userRoot()
+					.findByUsername(username);
+			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 	}
 
 	@Test
-	public void testUpdatePasswordWithNoPermission()
-			throws JsonGenerationException, JsonMappingException, IOException, Exception {
+	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		try (NoTx noTx = db().noTx()) {
 			User user = user();
 			String oldHash = user.getPasswordHash();
@@ -840,7 +874,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setPassword("new_password");
 			call(() -> client().updateUser(user.getUuid(), request), FORBIDDEN, "error_missing_perm", user.getUuid());
 
-			User reloadedUser = boot().userRoot().findByUuid(user.getUuid());
+			User reloadedUser = boot().userRoot()
+					.findByUuid(user.getUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		}
 	}
@@ -859,10 +894,12 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			updatedUser.setUsername("new_user");
 			// updatedUser.addGroup(group().getName());
 
-			MeshResponse<UserResponse> future = client().updateUser(user.getUuid(), updatedUser).invoke();
+			MeshResponse<UserResponse> future = client().updateUser(user.getUuid(), updatedUser)
+					.invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
-			User reloadedUser = boot().userRoot().findByUuid(user.getUuid());
+			User reloadedUser = boot().userRoot()
+					.findByUuid(user.getUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 			assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 			assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
@@ -880,7 +917,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			UserUpdateRequest request = new UserUpdateRequest();
 			request.setUsername("existing_username");
 
-			MeshResponse<UserResponse> future = client().updateUser(user().getUuid(), request).invoke();
+			MeshResponse<UserResponse> future = client().updateUser(user().getUuid(), request)
+					.invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "user_conflicting_username");
 		}
@@ -895,7 +933,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			UserUpdateRequest request = new UserUpdateRequest();
 			request.setUsername(user.getUsername());
 
-			MeshResponse<UserResponse> future = client().updateUser(user.getUuid(), request).invoke();
+			MeshResponse<UserResponse> future = client().updateUser(user.getUuid(), request)
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 		}
@@ -917,7 +956,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setGroupUuid(group().getUuid());
 			newUser.setPassword("test1234");
 
-			MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
+			MeshResponse<UserResponse> future = client().createUser(newUser)
+					.invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "user_conflicting_username");
 		}
@@ -934,7 +974,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setUsername("new_user_test123");
 			newUser.setGroupUuid(group().getUuid());
 
-			MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
+			MeshResponse<UserResponse> future = client().createUser(newUser)
+					.invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "user_missing_password");
 		}
@@ -949,7 +990,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setLastname("Doe");
 			newUser.setPassword("test123456");
 
-			MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
+			MeshResponse<UserResponse> future = client().createUser(newUser)
+					.invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "user_missing_username");
 		}
@@ -964,10 +1006,13 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		newUser.setUsername("new_user");
 		newUser.setPassword("test123456");
 
-		MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
+		MeshResponse<UserResponse> future = client().createUser(newUser)
+				.invoke();
 		latchFor(future);
 		assertSuccess(future);
-		assertEquals(0, future.result().getGroups().size());
+		assertEquals(0, future.result()
+				.getGroups()
+				.size());
 	}
 
 	@Test
@@ -980,7 +1025,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		newUser.setPassword("test123456");
 		newUser.setGroupUuid("bogus");
 
-		MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
+		MeshResponse<UserResponse> future = client().createUser(newUser)
+				.invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -1036,7 +1082,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (NoTx noTx2 = db().noTx()) {
 			assertThat(restUser).matches(request);
 
-			User user = boot().userRoot().findByUuid(restUser.getUuid());
+			User user = boot().userRoot()
+					.findByUuid(restUser.getUuid());
 			assertThat(restUser).matches(user);
 		}
 	}
@@ -1055,7 +1102,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			role().revokePermissions(meshRoot().getUserRoot(), CREATE_PERM);
 		}
 
-		String userRootUuid = db().noTx(() -> meshRoot().getUserRoot().getUuid());
+		String userRootUuid = db().noTx(() -> meshRoot().getUserRoot()
+				.getUuid());
 		call(() -> client().createUser(request), FORBIDDEN, "error_missing_perm", userRootUuid);
 	}
 
@@ -1075,7 +1123,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setUsername("new_user_" + i);
 			request.setPassword("test123456");
 			request.setGroupUuid(group().getUuid());
-			set.add(client().createUser(request).invoke());
+			set.add(client().createUser(request)
+					.invoke());
 		}
 		validateCreation(set, barrier);
 	}
@@ -1133,20 +1182,21 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setGroupUuid(group().getUuid());
 
 			UserResponse restUser = call(() -> client().createUser(newUser));
-			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(),
-					restUser.getUuid());
+			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), restUser.getUuid());
 			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
 			dummySearchProvider().clear();
 
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
 
-			MeshResponse<Void> future = client().deleteUser(uuid).invoke();
+			MeshResponse<Void> future = client().deleteUser(uuid)
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 
 			try (Tx tx = db().tx()) {
-				User loadedUser = boot().userRoot().findByUuid(uuid);
+				User loadedUser = boot().userRoot()
+						.findByUuid(uuid);
 				assertNull("The user should have been deleted.", loadedUser);
 			}
 
@@ -1168,7 +1218,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<MeshResponse<Void>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(client().deleteUser(uuid).invoke());
+			set.add(client().deleteUser(uuid)
+					.invoke());
 		}
 		validateDeletion(set, barrier);
 	}
@@ -1186,7 +1237,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			role().grantPermissions(user, CREATE_PERM);
 			role().grantPermissions(user, READ_PERM);
 
-			MeshResponse<Void> future = client().deleteUser(uuid).invoke();
+			MeshResponse<Void> future = client().deleteUser(uuid)
+					.invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 			userRoot = meshRoot().getUserRoot();
@@ -1196,7 +1248,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test(expected = NullPointerException.class)
 	public void testDeleteWithUuidNull() throws Exception {
-		MeshResponse<Void> future = client().deleteUser(null).invoke();
+		MeshResponse<Void> future = client().deleteUser(null)
+				.invoke();
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "null");
 	}
@@ -1220,10 +1273,12 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertTrue(role().hasPermission(DELETE_PERM, extraUser));
 
 			User user = userRoot.findByUuid(uuid);
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups()
+					.size());
 			assertTrue("The user should be enabled", user.isEnabled());
 
-			MeshResponse<Void> future = client().deleteUser(uuid).invoke();
+			MeshResponse<Void> future = client().deleteUser(uuid)
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 			userRoot.reload();
@@ -1256,17 +1311,21 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserCreateRequest request = new UserCreateRequest();
 		request.setUsername(name);
 		request.setPassword("bla");
-		MeshResponse<UserResponse> response = client().createUser(request).invoke();
+		MeshResponse<UserResponse> response = client().createUser(request)
+				.invoke();
 		latchFor(response);
 		assertSuccess(response);
 		try (NoTx noTx = db().noTx()) {
-			meshRoot().getUserRoot().reload();
-			User user = meshRoot().getUserRoot().findByUsername(name);
+			meshRoot().getUserRoot()
+					.reload();
+			User user = meshRoot().getUserRoot()
+					.findByUsername(name);
 			assertNotNull("User should have been created.", user);
-			assertEquals(CREATED.code(), response.getResponse().statusCode());
-			String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
-			assertEquals("Location header value did not match",
-					"http://localhost:" + port() + "/api/v1/users/" + user.getUuid(), location);
+			assertEquals(CREATED.code(), response.getResponse()
+					.statusCode());
+			String location = response.getResponse()
+					.getHeader(HttpHeaders.LOCATION);
+			assertEquals("Location header value did not match", "http://localhost:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}
 
@@ -1279,18 +1338,22 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		userRequest.setPassword("bla");
 
 		MeshRequest<UserResponse> request = client().createUser(userRequest);
-		request.getRequest().putHeader(HttpHeaders.HOST, "jotschi.de:" + port());
+		request.getRequest()
+				.putHeader(HttpHeaders.HOST, "jotschi.de:" + port());
 		MeshResponse<UserResponse> response = request.invoke();
 		latchFor(response);
 		assertSuccess(response);
 		try (NoTx noTx = db().noTx()) {
-			meshRoot().getUserRoot().reload();
-			User user = meshRoot().getUserRoot().findByUsername(name);
+			meshRoot().getUserRoot()
+					.reload();
+			User user = meshRoot().getUserRoot()
+					.findByUsername(name);
 			assertNotNull("User should have been created.", user);
-			assertEquals(CREATED.code(), response.getResponse().statusCode());
-			String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
-			assertEquals("Location header value did not match",
-					"http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
+			assertEquals(CREATED.code(), response.getResponse()
+					.statusCode());
+			String location = response.getResponse()
+					.getHeader(HttpHeaders.LOCATION);
+			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}
 }

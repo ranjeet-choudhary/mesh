@@ -27,9 +27,11 @@ public class GroupEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testReadMultiple() {
 		try (NoTx noTx = db().noTx()) {
-			MeshResponse<GroupListResponse> response = client().findGroups().invoke();
+			MeshResponse<GroupListResponse> response = client().findGroups()
+					.invoke();
 			latchFor(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
+			String etag = ETag.extract(response.getResponse()
+					.getHeader(ETAG));
 			assertNotNull(etag);
 
 			expect304(client().findGroups(), etag, true);
@@ -42,21 +44,19 @@ public class GroupEndpointETagTest extends AbstractETagTest {
 		try (NoTx noTx = db().noTx()) {
 			Group group = group();
 
-			MeshResponse<GroupResponse> response = client().findGroupByUuid(group.getUuid()).invoke();
+			MeshResponse<GroupResponse> response = client().findGroupByUuid(group.getUuid())
+					.invoke();
 			latchFor(response);
 			String etag = group.getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
+			assertEquals(etag, ETag.extract(response.getResponse()
+					.getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
 			MeshRequest<GroupResponse> request = client().findGroupByUuid(group.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
-			// The node has no node reference and thus expanding will not affect the etag
-			assertThat(expect304(client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true)).contains(etag);
-
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true);
-			expect304(client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true);
+			expect304(client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setLanguages("en,ru")), etag, true);
 		}
 
 	}

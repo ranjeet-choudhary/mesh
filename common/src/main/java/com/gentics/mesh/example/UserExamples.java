@@ -8,7 +8,6 @@ import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import com.gentics.mesh.core.rest.group.GroupReference;
-import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -80,7 +79,7 @@ public class UserExamples extends AbstractExamples {
 		userUpdate.setFirstname("Joe");
 		userUpdate.setLastname("Doe");
 		userUpdate.setEmailAddress("j.doe@nowhere.com");
-		ExpandableNode node = getUserResponse1("jdoe").getNodeReference();
+		NodeReference node = getUserResponse1("jdoe").getNodeReference();
 		userUpdate.setNodeReference(node);
 		return userUpdate;
 	}

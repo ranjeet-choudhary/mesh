@@ -65,7 +65,8 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		graphNodeFieldList = container.createNodeList(fieldKey);
 
 		// Handle Update
-		BootstrapInitializer boot = MeshInternal.get().boot();
+		BootstrapInitializer boot = MeshInternal.get()
+				.boot();
 		// Remove all and add the listed items
 		graphNodeFieldList.removeAll();
 		AtomicInteger integer = new AtomicInteger();
@@ -73,7 +74,8 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			Node node = boot.nodeRoot().findByUuid(item.getUuid());
+			Node node = boot.nodeRoot()
+					.findByUuid(item.getUuid());
 			if (node == null) {
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
 			}
@@ -111,41 +113,25 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 	@Override
 	public NodeFieldList transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
-
-		// Check whether the list should be returned in a collapsed or expanded format
-		NodeParametersImpl parameters = ac.getNodeParameters();
-		boolean expandField = parameters.getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		String[] lTagsArray = languageTags.toArray(new String[languageTags.size()]);
-
-		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
-			NodeFieldList restModel = new NodeFieldListImpl();
-			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				Node node = item.getNode();
-				if (!ac.getUser().canReadNode(ac, node)) {
-					continue;
-				}
-				restModel.getItems().add(node.transformToRestSync(ac, level, lTagsArray));
+		NodeFieldList restModel = new NodeFieldListImpl();
+		for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
+			Node node = item.getNode();
+			if (!ac.getUser()
+					.canReadNode(ac, node)) {
+				continue;
 			}
-
-			return restModel;
-		} else {
-			NodeFieldList restModel = new NodeFieldListImpl();
-			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				Node node = item.getNode();
-				if (!ac.getUser().canReadNode(ac, node)) {
-					continue;
-				}
-				restModel.add(node.toListItem(ac, lTagsArray));
-			}
-			return restModel;
-
+			restModel.add(node.toListItem(ac, lTagsArray));
 		}
+		return restModel;
 
 	}
 
 	@Override
 	public List<Node> getValues() {
-		return getList().stream().map(NodeGraphField::getNode).collect(Collectors.toList());
+		return getList().stream()
+				.map(NodeGraphField::getNode)
+				.collect(Collectors.toList());
 	}
 
 	@Override

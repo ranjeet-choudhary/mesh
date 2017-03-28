@@ -147,22 +147,6 @@ public interface FieldMap {
 	NodeField getNodeField(String fieldKey);
 
 	/**
-	 * Return the node field with the given key in expanded form.
-	 * 
-	 * @param fieldKey
-	 * @return
-	 */
-	NodeResponse getNodeFieldExpanded(String fieldKey);
-
-	/**
-	 * Returns true if the given field is an expanded node field.
-	 *
-	 * @param fieldKey
-	 * @return
-	 */
-	boolean isExpandedNodeField(String fieldKey);
-
-	/**
 	 * Return the micronode field with the given key.
 	 * 
 	 * @param fieldKey
@@ -228,10 +212,8 @@ public interface FieldMap {
 	 *            Expected field
 	 * @param listType
 	 *            Optional expected list type of the field
-	 * @param expand
-	 *            The field will be expanded (if possible) when set to true
 	 */
-	<T extends Field> T getField(String fieldKey, FieldTypes type, String listType, boolean expand);
+	<T extends Field> T getField(String fieldKey, FieldTypes type, String listType);
 
 	/**
 	 * Remove the a field with the given fieldKey from the fieldmap.

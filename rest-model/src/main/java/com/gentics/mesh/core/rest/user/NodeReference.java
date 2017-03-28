@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -10,7 +11,7 @@ import com.gentics.mesh.parameter.NodeParameters;
  * A node reference contains the bare minimum of useful information which identifies a node. Various field in the {@link NodeResponse} utilize these references
  * in order to reduce data.
  */
-public class NodeReference implements ExpandableNode {
+public class NodeReference implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the project to which the node belongs")
@@ -33,7 +34,6 @@ public class NodeReference implements ExpandableNode {
 	@JsonPropertyDescription("Reference to the schema of the node")
 	private SchemaReference schema;
 
-	@Override
 	public String getUuid() {
 		return uuid;
 	}

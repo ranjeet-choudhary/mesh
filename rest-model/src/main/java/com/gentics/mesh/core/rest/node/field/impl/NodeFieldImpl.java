@@ -22,6 +22,7 @@ public class NodeFieldImpl implements NodeField {
 		return uuid;
 	}
 
+	@Override
 	public NodeField setUuid(String uuid) {
 		this.uuid = uuid;
 		return this;
@@ -32,13 +33,7 @@ public class NodeFieldImpl implements NodeField {
 		return path;
 	}
 
-	/**
-	 * Set the webroot path
-	 * 
-	 * @param path
-	 *            webroot path
-	 * @return this instance
-	 */
+	@Override
 	public NodeField setPath(String path) {
 		this.path = path;
 		return this;
@@ -55,11 +50,7 @@ public class NodeFieldImpl implements NodeField {
 		return languagePaths;
 	}
 
-	/**
-	 * Set the language specific webroot paths.
-	 * 
-	 * @param languagePaths
-	 */
+	@Override
 	public NodeField setLanguagePaths(Map<String, String> languagePaths) {
 		this.languagePaths = languagePaths;
 		return this;
