@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertNotNull;
 
@@ -15,6 +16,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -23,9 +25,10 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public abstract class AbstractFieldEndpointTest extends AbstractMeshTest implements FieldEndpointTestcases {
 
-	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
+	protected NodeResponse readNode(Node node) {
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en");
+		parameters.setResolveLinks(LinkType.FULL);
 		return call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
 	}
 
@@ -37,7 +40,8 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		if (fieldKey != null) {
-			nodeCreateRequest.getFields().put(fieldKey, field);
+			nodeCreateRequest.getFields()
+					.put(fieldKey, field);
 		}
 
 		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")), status, bodyMessageI18nKey,
@@ -52,29 +56,21 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	 * @return
 	 */
 	protected NodeResponse updateNode(String fieldKey, Field field) {
-		return updateNode(fieldKey, field, false);
-	}
-
-	/**
-	 * Update the test node using the provided field field and field key as update data.
-	 * 
-	 * @param fieldKey
-	 * @param field
-	 * @param expandAll
-	 * @return
-	 */
-	protected NodeResponse updateNode(String fieldKey, Field field, boolean expandAll) {
 		Node node = folder("2015");
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
-		nodeUpdateRequest.getFields().put(fieldKey, field);
+		nodeUpdateRequest.getFields()
+				.put(fieldKey, field);
 		node.reload();
-		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english())
+				.getVersion()
+				.toString()));
 
 		NodeResponse response = call(
 				() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")));
 		assertNotNull("The response could not be found in the result of the future.", response);
-		assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));
+		assertNotNull("The field was not included in the response.", response.getFields()
+				.hasField(fieldKey));
 		return response;
 	}
 
@@ -82,8 +78,11 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		Node node = folder("2015");
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
-		nodeUpdateRequest.getFields().put(fieldKey, field);
-		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
+		nodeUpdateRequest.getFields()
+				.put(fieldKey, field);
+		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english())
+				.getVersion()
+				.toString()));
 
 		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")), status,
 				bodyMessageI18nKey, i18nParams);

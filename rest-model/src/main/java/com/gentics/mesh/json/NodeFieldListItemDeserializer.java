@@ -13,9 +13,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 
 /**
  * Deserializer which is used to deserialize node list items.
- * @deprecated We should be able to remove this deserializer
  */
-@Deprecated
 public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldListItem> {
 
 	@Override
@@ -36,9 +34,7 @@ public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldLis
 	 */
 	public NodeFieldListItem deserialize(JsonNode jsonNode, JsonParser jsonParser) throws JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
-
-		// Fallback and deseralize the element using the collapsed form.
-		NodeFieldListItemImpl collapsedItem = oc.treeToValue(jsonNode, NodeFieldListItemImpl.class);
+		NodeFieldListItem collapsedItem = oc.treeToValue(jsonNode, NodeFieldListItemImpl.class);
 		return collapsedItem;
 	}
 

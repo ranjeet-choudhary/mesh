@@ -683,9 +683,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			restNode.setLanguage(fieldContainer.getLanguage()
 					.getLanguageTag());
-			// List<String> fieldsToExpand = ac.getExpandedFieldnames();
-			// modify the language fallback list by moving the container's
-			// language to the front
+
+			// Modify the language fallback list by moving the container's language to the front
 			List<String> containerLanguageTags = new ArrayList<>(requestedLanguageTags);
 			containerLanguageTags.remove(restNode.getLanguage());
 			containerLanguageTags.add(0, restNode.getLanguage());
@@ -713,18 +712,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Iterate over all fields and transform them to rest
 			for (FieldSchema fieldEntry : schema.getFields()) {
-				// boolean expandField =
-				// fieldsToExpand.contains(fieldEntry.getName()) ||
-				// ac.getExpandAllFlag();
 				Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
 				if (fieldEntry.isRequired() && restField == null) {
-					// TODO i18n
-					// throw error(BAD_REQUEST, "The field {" +
-					// fieldEntry.getName()
-					// + "} is a required field but it could not be found in the
-					// node. Please add the field using an update call or change
-					// the field schema and
-					// remove the required flag.");
 					restNode.getFields()
 							.put(fieldEntry.getName(), null);
 				}

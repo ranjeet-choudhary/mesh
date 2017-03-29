@@ -515,8 +515,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		keyBuilder.append("-");
 		keyBuilder.append(getLastEditedTimestamp());
 
-		// We only need to compute the full etag if the referenced node is
-		// expanded.
+		// We only need to compute the full etag if the referenced node is set
 		Node referencedNode = getReferencedNode();
 		if (referencedNode != null) {
 			keyBuilder.append("-");

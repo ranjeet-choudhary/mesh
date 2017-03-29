@@ -554,7 +554,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param ac
 	 * @param languageTags
-	 * @return
+	 * @return Created list item
 	 */
 	NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags);
 

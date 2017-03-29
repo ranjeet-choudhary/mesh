@@ -1746,7 +1746,7 @@ Usage:
 	client.setLogin("username", "password");
 	client.login().toCompletable().await();
 
-	client.findNodes("demo", new NodeRequestParameter().setExpandAll(true).setLanguages("en")).setHandler(rh -> {
+	client.findNodes("demo", new NodeRequestParameter().setLanguages("en")).setHandler(rh -> {
 		if (rh.succeeded()) {
 			NodeListResponse list = rh.result();
 			for(NodeResponse nodeResponse : list.getData()) {

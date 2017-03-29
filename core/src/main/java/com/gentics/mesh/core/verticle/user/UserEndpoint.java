@@ -99,7 +99,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		readOne.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "User response which may also contain an expanded node.");
+		readOne.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "User response which may also contain a node reference.");
 		readOne.addQueryParameters(NodeParametersImpl.class);
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
@@ -117,7 +117,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		readAll.description("Load multiple users and return a paged list response.");
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
-		readAll.exampleResponse(OK, userExamples.getUserListResponse(), "User list response which may also contain an expanded node references.");
+		readAll.exampleResponse(OK, userExamples.getUserListResponse(), "User list response which may also contain node references for users.");
 		readAll.addQueryParameters(NodeParametersImpl.class);
 		readAll.addQueryParameters(VersioningParametersImpl.class);
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);

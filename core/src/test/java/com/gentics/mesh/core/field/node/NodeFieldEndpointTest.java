@@ -284,9 +284,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			NodeField field = response.getFields()
 					.getNodeField(FIELD_NAME);
-			assertNull(
-					"The expanded node field within the response should be null since we created the node without providing any field information.",
-					field);
+			assertNull("The node field within the response should be null since we created the node without providing any field information.", field);
 		}
 	}
 
@@ -326,15 +324,15 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 
 			// Assert that the field has not been loaded
-			NodeField deserializedExpandedNodeField = response.getFields()
+			NodeField deserializedNodeField = response.getFields()
 					.getNodeField(FIELD_NAME);
-			assertNull("The referenced field should be null", deserializedExpandedNodeField);
+			assertNull("The referenced field should be null", deserializedNodeField);
 
 		}
 	}
 
 	@Test
-	public void testReadExpandedNodeWithExistingField() throws IOException {
+	public void testReadNodeWithExistingField2() throws IOException {
 		try (NoTx noTx = db().noTx()) {
 			Node newsNode = folder("news");
 			Node node = folder("2015");
@@ -355,11 +353,9 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 					.getNodeField(FIELD_NAME);
 			assertNotNull(deserializedNodeField);
 
-			// 2. Read node with expanded fields
-			NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
-
-			// Check collapsed node field
-			deserializedNodeField = responseExpanded.getFields()
+			// Read & check node field
+			NodeResponse response = readNode(node);
+			deserializedNodeField = response.getFields()
 					.getNodeField(FIELD_NAME);
 			assertNotNull(deserializedNodeField);
 			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
@@ -367,7 +363,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	@Test
-	public void testReadExpandedNodeWithLanguageFallback() {
+	public void testReadNodeWithLanguageFallback() {
 		try (NoTx noTx = db().noTx()) {
 			Node folder = folder("2015");
 
@@ -390,10 +386,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			createEnglishNode.getFields()
 					.put("name", FieldUtil.createStringField("English Target"));
 
-			MeshResponse<NodeResponse> updateEnglishNode = client().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode)
-					.invoke();
-			latchFor(updateEnglishNode);
-			assertSuccess(updateEnglishNode);
+			call(() -> client().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode));
 
 			// add a node in german (referencing the target node)
 			NodeCreateRequest createSourceNode = new NodeCreateRequest();
@@ -405,20 +398,12 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			createSourceNode.getFields()
 					.put(FIELD_NAME, FieldUtil.createNodeField(germanTarget.getUuid()));
 
-			MeshResponse<NodeResponse> createSourceFuture = client().createNode(PROJECT_NAME, createSourceNode)
-					.invoke();
-			latchFor(createSourceFuture);
-			assertSuccess(createSourceFuture);
-			NodeResponse source = createSourceFuture.result();
+			NodeResponse source = call(() -> client().createNode(PROJECT_NAME, createSourceNode));
 
-			// read source node with expanded field
+			// Read source node
 			for (String[] requestedLangs : Arrays.asList(new String[] { "de" }, new String[] { "de", "en" }, new String[] { "en", "de" })) {
-				MeshResponse<NodeResponse> resultFuture = client().findNodeByUuid(PROJECT_NAME, source.getUuid(),
-						new NodeParametersImpl().setLanguages(requestedLangs), new VersioningParametersImpl().draft())
-						.invoke();
-				latchFor(resultFuture);
-				assertSuccess(resultFuture);
-				NodeResponse response = resultFuture.result();
+				NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, source.getUuid(),
+						new NodeParametersImpl().setLanguages(requestedLangs), new VersioningParametersImpl().draft()));
 				assertEquals("Check node language", "de", response.getLanguage());
 				NodeField nodeField = response.getFields()
 						.getNodeField(FIELD_NAME);

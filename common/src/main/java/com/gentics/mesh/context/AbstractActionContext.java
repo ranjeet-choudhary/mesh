@@ -24,7 +24,6 @@ public abstract class AbstractActionContext implements ActionContext {
 	private static final Logger log = LoggerFactory.getLogger(AbstractActionContext.class);
 
 	public static final String QUERY_MAP_DATA_KEY = "queryMap";
-	public static final String EXPANDED_FIELDNAMED_DATA_KEY = "expandedFieldnames";
 
 	@Override
 	@SuppressWarnings("unchecked")

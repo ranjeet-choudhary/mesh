@@ -31,8 +31,8 @@ public class MeshRestClientTest {
 
 		NodeParameters parameters2 = mock(NodeParameters.class);
 
-		when(parameters2.getQueryParameters()).thenReturn("expand=test");
-		assertEquals("?lang=en&expand=test", AbstractMeshRestHttpClient.getQuery(parameters1, parameters2));
+		when(parameters2.getQueryParameters()).thenReturn("blub=test");
+		assertEquals("?lang=en&blub=test", AbstractMeshRestHttpClient.getQuery(parameters1, parameters2));
 
 		assertEquals("", AbstractMeshRestHttpClient.getQuery());
 	}

@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -290,7 +289,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	}
 
 	@Test
-	public void testReadExpandedListWithNoPermOnItem() {
+	public void testReadListWithNoPermOnItem() {
 		try (NoTx noTx = db().noTx()) {
 			Node referencedNode = folder("news");
 			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
@@ -309,21 +308,11 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			assertEquals("The newsNode should not be within in the list thus the list should be empty.", 0, deserializedNodeListField.getItems()
 					.size());
 
-			// 2. Read node with expanded fields
-			NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
-
-			// Check collapsed node field
-			deserializedNodeListField = responseExpanded.getFields()
-					.getNodeFieldList(FIELD_NAME);
-			assertNotNull(deserializedNodeListField);
-			assertEquals("The item should also not be included in the list even if we request an expanded node.", 0,
-					deserializedNodeListField.getItems()
-							.size());
 		}
 	}
 
 	@Test
-	public void testReadExpandedNodeListWithExistingField() throws IOException {
+	public void testReadNodeListWithExistingField() throws IOException {
 		try (NoTx noTx = db().noTx()) {
 			Node newsNode = folder("news");
 			Node node = folder("2015");
@@ -333,7 +322,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", newsNode);
 
-			// 1. Read node with collapsed fields and check that the collapsed node list item can be read
+			// 1. Read node fields and check that the node list item can be read
 			NodeResponse responseCollapsed = readNode(node);
 			NodeFieldList deserializedNodeListField = responseCollapsed.getFields()
 					.getNodeFieldList(FIELD_NAME);
@@ -347,17 +336,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 					.get(0);
 			assertNotNull(nodeListItem);
 			assertNotNull(nodeListItem.getUuid());
-			assertNotNull(nodeListItem.getPath());
+			assertNotNull("The path should be set since we loaded the node with the resolve links parameter.",nodeListItem.getPath());
 			assertEquals(newsNode.getUuid(), nodeListItem.getUuid());
-
-			// Check node field
-			NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
-			deserializedNodeListField = responseExpanded.getFields()
-					.getNodeFieldList(FIELD_NAME);
-			assertNotNull(deserializedNodeListField);
-			assertEquals(newsNode.getUuid(), deserializedNodeListField.getItems()
-					.get(0)
-					.getUuid());
 		}
 	}
 }

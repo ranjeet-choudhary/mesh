@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== Pending
+
+icon:bullhorn[] The `expand` and `expandAll` parameters have been removed. It is no longer possible to expand nodes. Use GraphQL if you want to retrieve deeply nested data.
+
 == 0.9.1 (28.03.2017)
 
 icon:check[] The `Access-Control-Allow-Credentials: true` Header will now be returned when CORS support is enabled.

@@ -266,11 +266,9 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	/**
 	 * Test reading a node which has a micronode field which has a node field that reference the node we are currently reading.
-	 * 
-	 * We expect that resolving still works even if the expandAll flag is set.
 	 */
 	@Test
-	public void testExpandAllCyclicMicronodeWithNodeReference() {
+	public void testCyclicMicronodeWithNodeReference() {
 		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
@@ -297,7 +295,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			for (int i = 0; i < 10; i++) {
 				field.getFields().put("nodefield_" + i, FieldUtil.createNodeField(node.getUuid()));
 			}
-			NodeResponse response = updateNode("noderef", field, true);
+			NodeResponse response = updateNode("noderef", field);
 			assertThat(response.getFields().getMicronodeField("noderef")).matches(field, nodeMicroschema);
 		}
 	}

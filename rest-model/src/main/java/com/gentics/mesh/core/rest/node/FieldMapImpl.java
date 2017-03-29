@@ -119,29 +119,11 @@ public class FieldMapImpl implements FieldMap {
 			if (jsonNode.isPojo()) {
 				return pojoNodeToValue(jsonNode, NodeFieldList.class, key);
 			}
-			// TODO use NodeFieldListItemDeserializer to deserialize the item in expanded form
 			NodeFieldListImpl nodeListField = new NodeFieldListImpl();
-			// NodeFieldListItemDeserializer deser = new NodeFieldListItemDeserializer();
 			for (JsonNode node : jsonNode) {
 				nodeListField.getItems()
 						.add(mapper.treeToValue(node, NodeFieldListItem.class));
 			}
-			// NodeFieldListItem[] itemsArray = oc.treeToValue(jsonNode, NodeFieldListItemImpl[].class);
-			// nodeListField.getItems().addAll(Arrays.asList(itemsArray));
-
-			// NodeFieldListImpl nodeListField = null;
-			// try {
-			// nodeListField = JsonUtil.readNode(jsonNode.toString(), NodeFieldListImpl.class);
-			// } catch (MeshJsonException e) {
-			// if (log.isDebugEnabled()) {
-			// log.debug(
-			// "Could not deserialize json to expanded Node Response this is normal when the json does not contain expanded fields: "
-			// + e.getMessage());
-			// }
-			// nodeListField = oc.treeToValue(jsonNode, NodeFieldListImpl.class);
-			// } catch (IOException e) {
-			// throw new MeshJsonException("Could not read node field for key {" + fieldKey + "}", e);
-			// }
 			return nodeListField;
 		case "micronode":
 			// Unwrap stored pojos
