@@ -109,18 +109,18 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// 2. Fake an old issue timestamp
 		db().noTx(() -> user().setResetTokenIssueTimestamp(System.currentTimeMillis() - 1000 * 60 * 60));
 
-		// 2. Logout the current client user
+		// 3. Logout the current client user
 		client().logout()
 				.toBlocking()
 				.value();
 
-		// 3. Update the user using the token code
+		// 4. Update the user using the token code
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setPassword("newPass");
 		call(() -> client().updateUser(uuid, request, new UserParametersImpl(response.getToken())), UNAUTHORIZED,
 				"user_error_provided_token_invalid");
 
-		// 4. Assert that the password was not updated
+		// 5. Assert that the password was not updated
 		String newHash = db().noTx(() -> user().getPasswordHash());
 		assertEquals("The password hash has not been updated.", oldHash, newHash);
 		assertNull("The token code should have been set to null since it has expired.", db().noTx(() -> user().getResetToken()));
@@ -617,7 +617,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	public void testReadUserListWithExpandedNodeReference() {
+	public void testReadUserListWithNodeReference() {
 		UserResponse userCreateResponse = db().noTx(() -> {
 			Node node = folder("news");
 
@@ -630,11 +630,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setGroupUuid(group().getUuid());
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
-			MeshResponse<UserResponse> future = client().createUser(newUser)
-					.invoke();
-			latchFor(future);
-			assertSuccess(future);
-			return future.result();
+			return call(() -> client().createUser(newUser));
 		});
 
 		try (NoTx noTx = db().noTx()) {
@@ -652,45 +648,29 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull(foundUser.getNodeReference());
 			assertEquals(node.getUuid(), foundUser.getNodeReference()
 					.getUuid());
-			assertEquals(NodeResponse.class, foundUser.getNodeReference()
-					.getClass());
 		}
 	}
 
 	@Test
 	// test fails since user node references are not yet release aware
-	public void testReadUserWithExpandedNodeReference() {
-		String folderUuid;
-		UserCreateRequest newUser;
-		try (NoTx noTx = db().noTx()) {
-			Node node = folder("news");
-			folderUuid = node.getUuid();
+	public void testReadUserWithNodeReference() {
+		String folderUuid = db().noTx(() -> folder("news").getUuid());
+		String groupUuid = db().noTx(() -> group().getUuid());
 
-			NodeReference reference = new NodeReference();
-			reference.setUuid(node.getUuid());
-			reference.setProjectName(PROJECT_NAME);
+		UserCreateRequest request = new UserCreateRequest();
+		request.setUsername("new_user");
+		request.setGroupUuid(groupUuid);
+		request.setPassword("test1234");
+		NodeReference reference = new NodeReference();
+		reference.setUuid(folderUuid);
+		reference.setProjectName(PROJECT_NAME);
+		request.setNodeReference(reference);
 
-			UserCreateRequest request = new UserCreateRequest();
-			request.setUsername("new_user");
-			request.setGroupUuid(group().getUuid());
-			request.setPassword("test1234");
-			request.setNodeReference(reference);
-			newUser = request;
-		}
-
-		UserResponse userResponse = call(() -> client().createUser(newUser));
-
-		MeshResponse<UserResponse> userResponseFuture = client().findUserByUuid(userResponse.getUuid(), new NodeParametersImpl().setLanguages("en"))
-				.invoke();
-		latchFor(userResponseFuture);
-		assertSuccess(userResponseFuture);
-		UserResponse userResponse2 = userResponseFuture.result();
-		assertNotNull(userResponse2);
+		UserResponse userResponse = call(() -> client().createUser(request));
+		UserResponse userResponse2 = call(() -> client().findUserByUuid(userResponse.getUuid(), new NodeParametersImpl().setLanguages("en")));
 		assertNotNull(userResponse2.getNodeReference());
 		assertEquals(folderUuid, userResponse2.getNodeReference()
 				.getUuid());
-		assertEquals(NodeResponse.class, userResponse2.getNodeReference()
-				.getClass());
 
 	}
 
@@ -742,7 +722,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setPassword("test1234");
 			newUser.setNodeReference(reference);
 
-			call(() -> client().createUser(newUser), BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
+			call(() -> client().createUser(newUser), BAD_REQUEST, "user_incomplete_node_reference");
 		}
 	}
 

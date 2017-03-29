@@ -42,13 +42,14 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -76,8 +77,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = mockActionContext();
 			User user = user();
-			String eTag = user.getETag(ac);
-			System.out.println(eTag);
+			String etag = user.getETag(ac);
+			assertNotNull(etag);
 		}
 	}
 
@@ -86,9 +87,11 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRootNode() {
 		try (NoTx noTx = db().noTx()) {
 			UserRoot root = meshRoot().getUserRoot();
-			int nUserBefore = root.findAll().size();
+			int nUserBefore = root.findAll()
+					.size();
 			assertNotNull(root.create("dummy12345", user()));
-			int nUserAfter = root.findAll().size();
+			int nUserAfter = root.findAll()
+					.size();
 			assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 		}
 	}
@@ -100,31 +103,41 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			long start = System.currentTimeMillis();
 			int nChecks = 9000;
 			int runs = 90;
+			Node node = project().getBaseNode();
 			for (int e = 0; e < runs; e++) {
 				for (int i = 0; i < nChecks; i++) {
-					assertTrue(user.hasPermission(content(), READ_PERM));
+					assertTrue(user.hasPermission(node, READ_PERM));
 				}
 			}
 			long duration = System.currentTimeMillis() - start;
 			System.out.println("Duration: " + duration);
-			System.out.println("Duration per check: 	" + ((double) duration / (double) (nChecks * runs)));
+			System.out.println("Duration per check: " + ((double) duration / (double) (nChecks * runs)));
 		}
 	}
 
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
+
 		try (NoTx noTx = db().noTx()) {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
-			Page<? extends User> page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 6));
-			assertEquals(users().size(), page.getTotalElements());
-			assertEquals(3, page.getSize());
+			for (int i = 0; i < 10; i++) {
+				User user = boot().userRoot()
+						.create("user" + i, user());
+				role().grantPermissions(user, READ_PERM);
+			}
 
-			page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 15));
-			assertEquals(users().size(), page.getTotalElements());
-			assertEquals(users().size(), page.getSize());
+			Page<? extends User> page = boot().userRoot()
+					.findAll(ac, new PagingParametersImpl(1, 6));
+			assertEquals(users().size() + 10, page.getTotalElements());
+			assertEquals(6, page.getSize());
+
+			page = boot().userRoot()
+					.findAll(ac, new PagingParametersImpl(1, 15));
+			assertEquals(users().size() + 10, page.getTotalElements());
+			assertEquals(12, page.getSize());
 		}
 	}
 
@@ -132,7 +145,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db().noTx()) {
-			Page<? extends User> page = boot().userRoot().findAll(mockActionContext(), new PagingParametersImpl(1, 25));
+			Page<? extends User> page = boot().userRoot()
+					.findAll(mockActionContext(), new PagingParametersImpl(1, 25));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
 		}
@@ -154,9 +168,15 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertEquals(user().getEmailAddress(), json.getString("emailAddress"));
 
 				assertNotNull(json.getJsonArray("roles"));
-				assertEquals(user().getRoles().size(), json.getJsonArray("roles").size());
+				assertEquals(user().getRoles()
+						.size(),
+						json.getJsonArray("roles")
+								.size());
 				assertNotNull(json.getJsonArray("groups"));
-				assertEquals(user().getGroups().size(), json.getJsonArray("groups").size());
+				assertEquals(user().getGroups()
+						.size(),
+						json.getJsonArray("groups")
+								.size());
 			}
 		}
 	}
@@ -177,8 +197,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Permission[] perms = { CREATE, UPDATE, DELETE, READ, READ_PUBLISHED, PUBLISH };
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
+			Node node = project().getBaseNode();
 			for (int i = 0; i < nChecks; i++) {
-				PermissionInfo loadedPermInfo = user().getPermissionInfo(content());
+				PermissionInfo loadedPermInfo = user().getPermissionInfo(node);
 				assertThat(loadedPermInfo).hasPerm(perms);
 				// assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 			}
@@ -207,8 +228,10 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindByName() {
 		try (NoTx noTx = db().noTx()) {
-			assertNull(boot().userRoot().findByUsername("bogus"));
-			boot().userRoot().findByUsername(user().getUsername());
+			assertNull(boot().userRoot()
+					.findByUsername("bogus"));
+			boot().userRoot()
+					.findByUsername(user().getUsername());
 		}
 	}
 
@@ -217,7 +240,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testFindByUUID() throws Exception {
 		try (NoTx noTx = db().noTx()) {
 			String uuid = user().getUuid();
-			User foundUser = boot().userRoot().findByUuid(uuid);
+			User foundUser = boot().userRoot()
+					.findByUuid(uuid);
 			assertNotNull(foundUser);
 			assertEquals(uuid, foundUser.getUuid());
 		}
@@ -230,7 +254,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
-			UserResponse restUser = user().transformToRest(ac, 0).toBlocking().value();
+			UserResponse restUser = user().transformToRest(ac, 0)
+					.toBlocking()
+					.value();
 
 			assertNotNull(restUser);
 			assertEquals(user().getUsername(), restUser.getUsername());
@@ -238,7 +264,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(user().getLastname(), restUser.getLastname());
 			assertEquals(user().getFirstname(), restUser.getFirstname());
 			assertEquals(user().getEmailAddress(), restUser.getEmailAddress());
-			assertEquals(1, restUser.getGroups().size());
+			assertEquals(1, restUser.getGroups()
+					.size());
 		}
 	}
 
@@ -247,13 +274,15 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testCreateDelete() throws Exception {
 		try (NoTx noTx = db().noTx()) {
 			MeshRoot root = meshRoot();
-			User user = root.getUserRoot().create("Anton", user());
+			User user = root.getUserRoot()
+					.create("Anton", user());
 			assertTrue(user.isEnabled());
 			assertNotNull(user);
 			String uuid = user.getUuid();
 			SearchQueueBatch batch = createBatch();
 			user.delete(batch);
-			User foundUser = root.getUserRoot().findByUuid(uuid);
+			User foundUser = root.getUserRoot()
+					.findByUuid(uuid);
 			assertNull(foundUser);
 		}
 	}
@@ -264,7 +293,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (NoTx noTx = db().noTx()) {
 			MeshRoot root = meshRoot();
 			User user = user();
-			User newUser = root.getUserRoot().create("Anton", user());
+			User newUser = root.getUserRoot()
+					.create("Anton", user());
 			assertFalse(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
 			user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
 			assertTrue(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
@@ -287,36 +317,45 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			InternalActionContext ac = mockActionContext();
 
-			Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
-			newUser = meshRoot().getUserRoot().create("Anton", user());
+			Group newGroup = meshRoot().getGroupRoot()
+					.create("extraGroup", user());
+			newUser = meshRoot().getUserRoot()
+					.create("Anton", user());
 			newGroup.addUser(newUser);
 
 			// Create test roles
-			roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newUser);
+			roleWithDeletePerm = meshRoot().getRoleRoot()
+					.create("roleWithDeletePerm", newUser);
 			newGroup.addRole(roleWithDeletePerm);
 			roleWithDeletePerm.grantPermissions(sourceNode, GraphPermission.DELETE_PERM);
 
-			roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newUser);
+			roleWithReadPerm = meshRoot().getRoleRoot()
+					.create("roleWithReadPerm", newUser);
 			newGroup.addRole(roleWithReadPerm);
 			roleWithReadPerm.grantPermissions(sourceNode, GraphPermission.READ_PERM);
 
-			roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newUser);
+			roleWithUpdatePerm = meshRoot().getRoleRoot()
+					.create("roleWithUpdatePerm", newUser);
 			newGroup.addRole(roleWithUpdatePerm);
 			roleWithUpdatePerm.grantPermissions(sourceNode, GraphPermission.UPDATE_PERM);
 
-			roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newUser);
+			roleWithAllPerm = meshRoot().getRoleRoot()
+					.create("roleWithAllPerm", newUser);
 			newGroup.addRole(roleWithAllPerm);
 			roleWithAllPerm.grantPermissions(sourceNode, GraphPermission.CREATE_PERM, GraphPermission.UPDATE_PERM, GraphPermission.DELETE_PERM,
 					GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM, PUBLISH_PERM);
 
-			roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newUser);
+			roleWithCreatePerm = meshRoot().getRoleRoot()
+					.create("roleWithCreatePerm", newUser);
 			newGroup.addRole(roleWithCreatePerm);
 			roleWithCreatePerm.grantPermissions(sourceNode, GraphPermission.CREATE_PERM);
 
-			roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newUser);
+			roleWithNoPerm = meshRoot().getRoleRoot()
+					.create("roleWithNoPerm", newUser);
 			newGroup.addRole(roleWithNoPerm);
 			user().addCRUDPermissionOnRole(sourceNode, GraphPermission.CREATE_PERM, targetNode);
-			ac.data().clear();
+			ac.data()
+					.clear();
 			newUser.reload();
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(
@@ -389,7 +428,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(user.getCreator());
 			assertNotNull(user.getEditor());
 			assertNotNull(user.getCreationTimestamp());
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups()
+					.size());
 			assertNotNull(user);
 		}
 	}
@@ -398,10 +438,12 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testUserGroup() {
 		try (NoTx noTx = db().noTx()) {
 			User user = user();
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups()
+					.size());
 
 			for (int i = 0; i < 10; i++) {
-				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
+				Group extraGroup = meshRoot().getGroupRoot()
+						.create("group_" + i, user());
 				// Multiple calls should not affect the result
 				extraGroup.addUser(user);
 				extraGroup.addUser(user);
@@ -409,7 +451,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 				extraGroup.addUser(user);
 			}
 
-			assertEquals(11, user().getGroups().size());
+			assertEquals(11, user().getGroups()
+					.size());
 		}
 	}
 
@@ -446,11 +489,13 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (NoTx noTx = db().noTx()) {
 			User user = user();
 			String uuid = user.getUuid();
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups()
+					.size());
 			assertTrue(user.isEnabled());
 			SearchQueueBatch batch = createBatch();
 			user.delete(batch);
-			User foundUser = meshRoot().getUserRoot().findByUuid(uuid);
+			User foundUser = meshRoot().getUserRoot()
+					.findByUuid(uuid);
 			assertNull(foundUser);
 		}
 	}
@@ -466,7 +511,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testUpdate() {
 		try (NoTx noTx = db().noTx()) {
-			User newUser = meshRoot().getUserRoot().create("newUser", user());
+			User newUser = meshRoot().getUserRoot()
+					.create("newUser", user());
 
 			User user = user();
 
@@ -481,16 +527,19 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			user.setEditor(newUser);
 			assertNotNull(user.getEditor());
-			assertEquals(newUser.getUuid(), user.getEditor().getUuid());
+			assertEquals(newUser.getUuid(), user.getEditor()
+					.getUuid());
 			user.setLastEditedTimestamp(1);
-			assertEquals(1, user.getLastEditedTimestamp().longValue());
+			assertEquals(1, user.getLastEditedTimestamp()
+					.longValue());
 
 			user.setCreator(newUser);
 			assertNotNull(user.getCreator());
 			assertEquals(newUser, user.getCreator());
 
 			user.setCreationTimestamp(0);
-			assertEquals(0, user.getCreationTimestamp().longValue());
+			assertEquals(0, user.getCreationTimestamp()
+					.longValue());
 
 			assertTrue(user.isEnabled());
 			user.disable();
@@ -504,7 +553,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testReadPermission() {
 		try (NoTx noTx = db().noTx()) {
-			User user = meshRoot().getUserRoot().create("Anton", user());
+			User user = meshRoot().getUserRoot()
+					.create("Anton", user());
 			testPermission(GraphPermission.READ_PERM, user);
 		}
 	}
@@ -513,7 +563,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testDeletePermission() {
 		try (NoTx noTx = db().noTx()) {
-			User user = meshRoot().getUserRoot().create("Anton", user());
+			User user = meshRoot().getUserRoot()
+					.create("Anton", user());
 			testPermission(GraphPermission.DELETE_PERM, user);
 		}
 	}
@@ -522,7 +573,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testUpdatePermission() {
 		try (NoTx noTx = db().noTx()) {
-			User user = meshRoot().getUserRoot().create("Anton", user());
+			User user = meshRoot().getUserRoot()
+					.create("Anton", user());
 			testPermission(GraphPermission.UPDATE_PERM, user);
 		}
 	}
@@ -531,7 +583,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreatePermission() {
 		try (NoTx noTx = db().noTx()) {
-			User user = meshRoot().getUserRoot().create("Anton", user());
+			User user = meshRoot().getUserRoot()
+					.create("Anton", user());
 			testPermission(GraphPermission.CREATE_PERM, user);
 		}
 	}

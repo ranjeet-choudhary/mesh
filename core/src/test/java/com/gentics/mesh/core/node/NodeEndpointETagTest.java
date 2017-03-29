@@ -7,7 +7,6 @@ import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
@@ -22,7 +21,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -137,12 +135,9 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			MeshRequest<NodeResponse> request = client().findNodeByUuid(PROJECT_NAME, node.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
-			assertNotEquals("A different etag should have been generated since we are not requesting the expanded node.", etag,
-					expectNo304(client().findNodeByUuid(PROJECT_NAME, node.getUuid()), etag, true));
-
-			String newETag = expectNo304(client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new PagingParametersImpl().setPage(1)), etag, true);
-			assertNotEquals("We added parameters and thus a new etag should have been generated.", newETag,
-					expectNo304(client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl()), newETag, true));
+			String newETag = expect304(client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new PagingParametersImpl().setPage(1)), etag, true);
+			assertEquals("We added bogus parameters - no new etag should have been generated.", newETag,
+					expect304(client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new PagingParametersImpl().setPage(20)), newETag, true));
 
 		}
 

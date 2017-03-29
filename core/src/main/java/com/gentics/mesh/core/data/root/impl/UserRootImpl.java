@@ -183,10 +183,9 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 		}
 
-		if (reference != null && reference instanceof NodeReference) {
-			NodeReference basicReference = ((NodeReference) reference);
-			String referencedNodeUuid = basicReference.getUuid();
-			String projectName = basicReference.getProjectName();
+		if (reference != null) {
+			String referencedNodeUuid = reference.getUuid();
+			String projectName = reference.getProjectName();
 
 			if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
 				throw error(BAD_REQUEST, "user_incomplete_node_reference");
@@ -201,9 +200,6 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			Node node = project.getNodeRoot()
 					.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
 			user.setReferencedNode(node);
-		} else if (reference != null) {
-			// TODO handle user create using full node rest model.
-			throw error(BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 		}
 		return user;
 	}

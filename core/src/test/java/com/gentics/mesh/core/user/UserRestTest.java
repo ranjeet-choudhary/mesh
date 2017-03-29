@@ -44,7 +44,7 @@ public class UserRestTest {
 		UserResponse deserializedResponse = JsonUtil.readValue(json, UserResponse.class);
 		assertNotNull(deserializedResponse);
 		assertNotNull("The node reference field could not be found.", deserializedResponse.getNodeReference());
-		assertEquals(NodeResponse.class, deserializedResponse.getNodeReference().getClass());
+		assertEquals(NodeReference.class, deserializedResponse.getNodeReference().getClass());
 		assertEquals(nodeResponse.getUuid(), deserializedResponse.getNodeReference().getUuid());
 
 		// Test again with basic reference

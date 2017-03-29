@@ -37,7 +37,7 @@ public abstract class AbstractETagTest extends AbstractMeshTest {
 	 * @param request
 	 * @param etag
 	 * @param isWeak
-	 * @return
+	 * @return etag from the response
 	 */
 	protected String expect304(MeshRequest<?> request, String etag, boolean isWeak) {
 		request.getRequest().putHeader(IF_NONE_MATCH, ETag.prepareHeader(etag, isWeak));
