@@ -4,6 +4,7 @@ import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
@@ -120,6 +121,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		restBranch.setSsl(getSsl());
 		// restBranch.setActive(isActive());
 		restBranch.setMigrated(isMigrated());
+		restBranch.setLatest(isLatest());
 
 		// Add common fields
 		fillCommonRestFields(ac, restBranch);
@@ -161,6 +163,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public Branch setSsl(boolean ssl) {
 		setProperty(SSL, ssl);
+		return this;
+	}
+
+	@Override
+	public boolean isLatest() {
+		return inE(HAS_LATEST_BRANCH).hasNext();
+	}
+
+	@Override
+	public Branch setLatest() {
+		getRoot().setLatestBranch(this);
 		return this;
 	}
 

@@ -22,6 +22,8 @@ CAUTION: The concept of releases has been renamed into branches. The database st
 * The Java REST Models have been renamed. (e.g.: ReleaseCreateRequest -> BranchCreateRequest)
 * I18n messages have been changed accordingly.
 
+icon:plus[] Branches: It is now possible to set the "latest" branch of a project.
+
 icon:plus[] Elasticsearch: The base64 encoded binary document data will no longer be stored in the search index.
 
 icon:check[] GraphQl: Fixed a bug that caused an error when multiple queries where executed concurrently.

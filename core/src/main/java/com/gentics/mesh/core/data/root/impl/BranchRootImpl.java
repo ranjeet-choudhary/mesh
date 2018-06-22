@@ -50,7 +50,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	@Override
-	public Branch create(String name, User creator, String uuid) {
+	public Branch create(String name, User creator, String uuid, boolean setLatest) {
 		Branch latestBranch = getLatestBranch();
 
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
@@ -73,7 +73,9 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// make the new branch the latest
-		setSingleLinkOutTo(branch, HAS_LATEST_BRANCH);
+		if (setLatest || latestBranch == null) {
+			setSingleLinkOutTo(branch, HAS_LATEST_BRANCH);
+		}
 
 		// set initial permissions on the branch
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, branch);
@@ -99,6 +101,11 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	@Override
 	public Branch getLatestBranch() {
 		return out(HAS_LATEST_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
+	}
+
+	@Override
+	public void setLatestBranch(Branch branch) {
+		setSingleLinkOutTo(branch, HAS_LATEST_BRANCH);
 	}
 
 	@Override
@@ -128,7 +135,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 			throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", request.getName());
 		}
 
-		Branch branch = create(request.getName(), requestUser, uuid);
+		Branch branch = create(request.getName(), requestUser, uuid, request.isLatest());
 		if (!isEmpty(request.getHostname())) {
 			branch.setHostname(request.getHostname());
 		}
