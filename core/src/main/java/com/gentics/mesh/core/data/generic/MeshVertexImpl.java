@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -162,7 +162,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		throw new NotImplementedException("The deletion behaviour for this vertex was not implemented.");
 	}
 

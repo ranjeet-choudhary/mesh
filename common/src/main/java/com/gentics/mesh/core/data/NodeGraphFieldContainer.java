@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
@@ -139,7 +139,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * 
 	 * @param context
 	 */
-	void delete(DeletionContext context);
+	void delete(BulkActionContext context);
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists.
@@ -148,7 +148,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param deleteNext
 	 *            true to also delete all "next" containers, false to only delete this container
 	 */
-	void delete(DeletionContext context, boolean deleteNext);
+	void delete(BulkActionContext context, boolean deleteNext);
 
 	/**
 	 * "Delete" the field container from the release. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
@@ -156,7 +156,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param release
 	 * @param context
 	 */
-	void deleteFromRelease(Release release, DeletionContext context);
+	void deleteFromRelease(Release release, BulkActionContext context);
 
 	/**
 	 * Return the display field value for this container.

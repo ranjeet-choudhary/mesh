@@ -23,7 +23,7 @@ import java.util.Set;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.context.DeletionContext;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleElementAction;
@@ -202,7 +202,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public void delete(DeletionContext context) {
+	public void delete(BulkActionContext context) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + getName() + "}");
 		}
@@ -231,7 +231,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
 
 		// Remove the tagfamilies from the index
-		getTagFamilyRoot().delete(new DeletionContext(dummyBatch));
+		getTagFamilyRoot().delete(new BulkActionContext(dummyBatch));
 
 		// Remove the nodes in the project hierarchy
 		getBaseNode().delete(context, true);
